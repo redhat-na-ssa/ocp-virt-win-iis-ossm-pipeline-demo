@@ -1,0 +1,36 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: web-front-end-vs
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - istio-system/demo-gateway
+  http:
+  - match:
+    - uri:
+        exact: "/web"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: web-front-end # service name
+  - match:
+    - uri:
+        exact: "/web/hello"
+    rewrite:
+      uri: "/hello"
+    route:
+    - destination:
+        host: web-front-end # service name
+  - match:
+    - uri:
+        exact: "/web/hello-service"
+    rewrite:
+      uri: "/hello-service"
+    route:
+    - destination:
+        host: web-front-end #  service name 
+
+#can also user <service name>.<namespace>.svc.cluster.local for fully qualified service/host name
