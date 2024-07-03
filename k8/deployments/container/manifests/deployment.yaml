@@ -35,7 +35,7 @@ spec:
         - name: SERVICE_LOCAL
           value: web-front-end
         - name: SERVICE_REMOTE
-          value: service-b
+          value: vm-back-end
         image: quay.io/llevy/service-b:v1
         imagePullPolicy: Always
         name: web-front-end

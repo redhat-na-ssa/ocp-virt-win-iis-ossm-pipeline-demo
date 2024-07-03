@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vm-back-end
+spec:
+  hosts:
+    - vm-back-end #.vm-to-vm.svc.cluster.local
+  http:
+  - route:
+    - destination:
+        host: vm-back-end #.vm-to-vm.svc.cluster.local
+        subset: VM1 
+      weight: 100
+#    - destination: #leaving this here in case we want to use for demo
+#        host: vm-back-end #.vm-to-vm.svc.cluster.local
+#        subset: VM2
+#      weight: 50

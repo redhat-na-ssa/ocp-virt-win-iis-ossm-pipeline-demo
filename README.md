@@ -57,10 +57,12 @@ Create a namespace/project called `demo-vm-ossm` which is where the control plan
 
 `oc apply -f k8/service-mesh/istio/service-mesh-member-role.yaml`
 
-### Create placeholder container deployment and VM with service mesh annotations
+### Create placeholder container deployment and VM with service mesh annotations (back-end)
 
-#### Container Deployement
+`oc apply -f k8/deployments/vm/manifests -n demo-vm-ossm`
 
+#### Container Deployement (front-end)
+ 
 `oc apply -f k8/deployments/container/manifests -n demo-vm-ossm`
 
 ### Ensure setup is working
@@ -83,7 +85,29 @@ curl $GATEWAY/web/hello
 ```
 
 3. Call the back-end service via the front-end  
- TODO
+
+```
+curl $GATEWAY/web/hello-service                               
+{"response":{"message":"Hello World from vm-backend-b1"}}
+```
+This is calling the container deployment via the gateway. Internally this API is making a call to the back-end service running on the VM and passing the response from it back
+
+```
+   +-----------+       +----------------+       +-----------------------+       +-------------+  
+   | API Caller | ---> | Ingress Gateway | ---> | Front-end Deployment  | --->  |  Back-end VM|  
+   +-----------+       +----------------+       +-----------------------+       +-------------+  
+         |                        |                        |                       |  
+         |<-----------------------|<-----------------------|<----------------------|  
+          (5) Response from       (4) Response from       (3) Call to VM          (2) Call to Front-end  
+              Front-end to            VM to Front-end         from Front-end        from Ingress Gateway  
+              API Caller  
+
+(1) API Caller makes a call to the Ingress Gateway.
+(2) The Ingress Gateway routes the call to the Front-end Deployment.
+(3) The Front-end Deployment makes a call to the Back-end VM.
+(4) The Back-end VM sends a response back to the Front-end Deployment.
+(5) The Front-end Deployment sends the response from the Back-end VM to the API Caller.
+```
 
 ### Eventually replace deployment and VM with new components
 TODO
