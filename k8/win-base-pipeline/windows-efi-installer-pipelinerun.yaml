@@ -1,0 +1,33 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: windows-efi-installer-97k612
+  namespace: openshift-virtualization-os-images
+spec:
+  params:
+    - name: winImageDownloadURL
+      value: '```insert iso url here```'
+    - name: instanceTypeName
+      value: u1.large
+    - name: instanceTypeKind
+      value: VirtualMachineClusterInstancetype
+    - name: preferenceName
+      value: windows.11
+    - name: virtualMachinePreferenceKind
+      value: VirtualMachineClusterPreference
+    - name: autounattendConfigMapName
+      value: windows11-autounattend
+    - name: virtioContainerDiskName
+      value: 'quay.io/kubevirt/virtio-container-disk:v1.2.0'
+    - name: baseDvName
+      value: win11
+    - name: baseDvNamespace
+      value: openshift-virtualization-os-images
+    - name: isoDVName
+      value: win11
+  pipelineRef:
+    name: windows-efi-installer
+  taskRunTemplate:
+    serviceAccountName: pipeline
+  timeouts:
+    pipeline: 3h0m0s
