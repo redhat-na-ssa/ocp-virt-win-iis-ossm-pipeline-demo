@@ -25,6 +25,9 @@ Additional Operators include:
 You can run the below instructions manually, as described, or run the helper scripts in order
 to save some copy/pasta time:
 
+verify one script completes before running the next one in order.
+
+TODO: add waiting until success capability in scripts
 
 ```
 sh 1-setup-mesh.sh
