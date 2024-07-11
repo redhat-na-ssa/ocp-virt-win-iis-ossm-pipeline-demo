@@ -22,6 +22,18 @@ Additional Operators include:
 
 ### Create Service Mesh control plane
 
+You can run the below instructions manually, as described, or run the helper scripts in order
+to save some copy/pasta time:
+
+
+```
+sh 1-setup-mesh.sh
+
+sh 2-setup-app.sh
+
+sh 3-test-app.sh
+```
+
 1. Create a namespace/project called `istio-system` which is where the control plane will be deployed.  
  
  `oc apply -f k8/service-mesh/istio/namespace.yaml`  
