@@ -12,7 +12,7 @@ sleep 3
 
 watch oc get pods -n istio-system  
 
-# Ctrl-C once all pods are up (there should be 7) KEEP AN EY OUT FOR KIALI!!!!!!
+# Ctrl-C once all pods are up (there should be 7) KEEP AN EYE OUT FOR KIALI!!!!!!
 
 # NAME                                    READY   STATUS    RESTARTS   AGE
 # grafana-58d67499c4-67jhs                2/2     Running   0          108s
