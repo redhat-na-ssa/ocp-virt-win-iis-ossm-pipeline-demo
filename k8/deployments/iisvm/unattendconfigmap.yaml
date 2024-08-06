@@ -1,0 +1,177 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: sysprep-iis
+  namespace: demo-vm-ossm
+data:
+  dotnet-sysprep-script.ps1: |-
+    # Variable specifying the drive you want to extend  
+    $drive_letter = "C"  
+      
+    # Script to get the partition sizes and then resize the volume  
+    $size = (Get-PartitionSupportedSize -DriveLetter $drive_letter)  
+    Resize-Partition -DriveLetter $drive_letter -Size $size.SizeMax  
+
+    # Install virtio guest drivers
+    Start-Process msiexec -Wait -ArgumentList "/i D:\virtio-win-gt-x64.msi /qn /passive /norestart"
+
+    # Install qemu guest agent
+    Start-Process msiexec -Wait -ArgumentList "/i D:\guest-agent\qemu-ga-x86_64.msi /qn /passive /norestart"
+
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServerRole
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServer
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-CommonHttpFeatures
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpErrors
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpRedirect
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-ApplicationDevelopment
+
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-HealthAndDiagnostics
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpLogging
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-LoggingLibraries
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-RequestMonitor
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpTracing
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-Security
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-RequestFiltering
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-Performance
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServerManagementTools
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-IIS6ManagementCompatibility
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-Metabase
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-ManagementConsole
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-BasicAuthentication
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-WindowsAuthentication
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-StaticContent
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-DefaultDocument
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebSockets
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-ApplicationInit
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-ISAPIExtensions
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-ISAPIFilter
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpCompressionStatic
+
+    ## 1.) IIS Hosting Module:
+
+    # Variables
+    $downloadUrl = "https://download.visualstudio.microsoft.com/download/pr/70f96ebd-54ce-4bb2-a90f-2fbfc8fd90c0/aa542f2f158cc6c9e63b4287e4618f0a/dotnet-hosting-8.0.5-win.exe"
+    $installerPath = "C:\Temp\dotnet-hosting-8.0.5-win.exe"
+
+    # Create Temp Directory if it doesn't exist
+    if (-Not (Test-Path "C:\Temp")) {
+        New-Item -ItemType Directory -Path "C:\Temp"
+    }
+
+    # Download the Installer
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $installerPath
+
+    # Install the MSI/EXE
+    Start-Process -FilePath $installerPath -ArgumentList "/quiet" -Wait
+
+    # Verify Installation
+    $installed = Get-ItemProperty "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Microsoft ASP.NET Core Module*" }
+
+    if ($installed) {
+        Write-Host ".NET 8 IIS Hosting Module installed successfully."
+    } else {
+        Write-Host "Installation failed."
+    }
+
+    # Clean up
+    Remove-Item -Path $installerPath -Force
+
+    ## 2.) Add the .NET ASP Application to IIS:
+
+    # Variables
+    $dotnetUrl = "https://github.com/JRBowman/ocp-virt-win-iis-demo/raw/master/dotnet-iis-app.zip"
+    $zipFilePath = "C:\Temp\dotnet-iis-app.zip"
+    $destinationPath = "C:\Temp\dotnet-iis-app"
+    $iisDefaultSitePath = "C:\inetpub\wwwroot"
+
+    # Create Temp Directory if it doesn't exist
+    if (-Not (Test-Path "C:\Temp")) {
+        New-Item -ItemType Directory -Path "C:\Temp"
+    }
+
+    # Download the Installer
+    Invoke-WebRequest -Uri $dotnetUrl -OutFile $zipFilePath
+
+    # Unzip the contents:
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFilePath, $destinationPath)
+
+    # Copy the contents of the app to the IIS Directory:
+    Copy-Item -Path "$destinationPath\dotnet-iis-app\*" -Destination "$iisDefaultSitePath" -Recurse -Force
+
+    Write-Host "Contents copied to IIS Default Site directory successfully."
+
+    # Clean up
+    Remove-Item -Path $destinationPath -Force -Recurse
+    Remove-Item -Path $zipFilePath -Force
+  unattend.xml: |-
+    <?xml version="1.0" encoding="utf-8"?>
+        <unattend xmlns="urn:schemas-microsoft-com:unattend">
+            <!-- Specialize phase -->
+            <settings pass="specialize">
+                <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <InputLocale>0409:00000409</InputLocale>
+                    <SystemLocale>en-US</SystemLocale>
+                    <UILanguage>en-US</UILanguage>
+                    <UILanguageFallback>en-US</UILanguageFallback>
+                    <UserLocale>en-US</UserLocale>
+                </component>
+                <component name="Microsoft-Windows-Security-SPP-UX" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <SkipAutoActivation>true</SkipAutoActivation>
+                </component>
+                <component name="Microsoft-Windows-SQMApi" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <CEIPEnabled>0</CEIPEnabled>
+                </component>
+            </settings>
+
+            <!-- OOBE System phase -->
+            <settings pass="oobeSystem">
+                <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <AutoLogon>
+                        <Password>
+                            <Value>Welcome1!</Value>
+                            <PlainText>true</PlainText>
+                        </Password>
+                        <Enabled>true</Enabled>
+                        <Username>Administrator</Username>
+                    </AutoLogon>
+                    <OOBE>
+                        <HideEULAPage>true</HideEULAPage>
+                        <HideLocalAccountScreen>true</HideLocalAccountScreen>
+                        <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>
+                        <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
+                        <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
+                        <NetworkLocation>Work</NetworkLocation>
+                        <ProtectYourPC>3</ProtectYourPC>
+                        <SkipMachineOOBE>true</SkipMachineOOBE>
+                        <SkipUserOOBE>true</SkipUserOOBE>
+                    </OOBE>
+                    <RegisteredOrganization>Organization</RegisteredOrganization>
+                    <RegisteredOwner>Owner</RegisteredOwner>
+                    <DisableAutoDaylightTimeSet>false</DisableAutoDaylightTimeSet>
+                    <TimeZone>Eastern Standard Time</TimeZone>
+                    <FirstLogonCommands>
+                        <SynchronousCommand wcm:action="add">
+                            <Order>1</Order>
+                            <Description>Execute final powershell</Description>
+                            <RequiresUserInput>false</RequiresUserInput>
+                            <CommandLine>powershell -ExecutionPolicy Bypass -NoExit -NoProfile E:\dotnet-sysprep-script.ps1</CommandLine>
+                        </SynchronousCommand>
+                    </FirstLogonCommands>
+                    <UserAccounts>
+                        <AdministratorPassword>
+                            <Value>Welcome1!</Value>
+                            <PlainText>true</PlainText>
+                        </AdministratorPassword>
+                        <LocalAccounts>
+                            <LocalAccount wcm:action="add">
+                                <Description>Administrator</Description>
+                                <DisplayName>Administrator</DisplayName>
+                                <Group>Administrators</Group>
+                                <Name>Administrator</Name>
+                            </LocalAccount>
+                        </LocalAccounts>
+                    </UserAccounts>
+                </component>
+            </settings>
+        </unattend>
