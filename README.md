@@ -150,31 +150,25 @@ This is calling the container deployment via the gateway. Internally this API is
 (5) The Front-end Deployment sends the response from the Back-end VM to the API Caller.
 ```
 
-### Eventually replace deployment and VM with new components
-TODO
-[windows deployment git repo](https://github.com/redhat-na-ssa/ocp-virt-win-iis-demo)   
-[Windows Server 2022 ISO](https://www.microsoft.com/en-us/evalcenter/download-windows-server-2022)  
+### IIS VM Deployment
 
-To deploy windows app directly from repo **(WARNING IN PROGRESS DOES NOT CURRENTLY WORK!!!)**:  
+To deploy windows app directly from repo:  
 
- ```
- # Configmap with sys-prep data <winserver-iis-sysprep>
-
- oc create -n demo-vm-ossm \
- -f https://raw.githubusercontent.com/redhat-na-ssa/ocp-virt-win-iis-demo/master/.openshift/winserver-iis-sysprep-configmap.yaml 
-
-# Service for IIS API <solace-api>
-
-oc create -n demo-vm-ossm \
--f https://raw.githubusercontent.com/redhat-na-ssa/ocp-virt-win-iis-demo/master/.openshift/winserver-iis-api-service.yaml
-
-# The VM <winserver-iis> ISO location needs to be updated
-oc create -n demo-vm-ossm \
--f https://raw.githubusercontent.com/redhat-na-ssa/ocp-virt-win-iis-demo/levy-ossm/.openshift/winserver-iis-virtualmachine.yaml
+# Configmap with sys-prep data winvm-iis
+```
+oc create -n demo-vm-ossm -f k8/deployments/iisvm/unattendconfigmap.yaml
 ```
 
-Note: The ISO will need to live somewhere accessible to the cluster
+# Service for IIS API winvm-iis
+```
+oc create -n demo-vm-ossm -f k8/deployments/iisvm/service.yaml
+oc create -n demo-vm-ossm -f k8/deployments/iisvm/route.yaml
+```
 
-## Dale: Add CICD that deploys stack
+# The VM creation
+```
+oc create -n demo-vm-ossm -f k8/deployments/iisvm/vm.yaml
+```
+
 
 ### TODO
