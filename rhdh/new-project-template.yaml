@@ -22,6 +22,15 @@ spec:
           ui:autofocus: true
           ui:options:
             rows: 5
+        owner:
+          title: Owner
+          type: string
+          ui:field: EntityPicker
+          ui:options:
+            catalogFilter:
+              kind:
+                - Group
+                - User
     - title: Choose a location
       required:
         - repoUrl
@@ -43,6 +52,7 @@ spec:
         url: ./template
         values:
           name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
 
     - id: publish
       name: Publish
