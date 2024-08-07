@@ -5,6 +5,32 @@
 
 - Leon: Create OSSM skeleton
 
+### Install Windows Base Image
+
+1. Copy the PKI entitlement key from the managed namespace (this is needed because we are using RHEL specific packages)
+  ```
+  oc get secret etc-pki-entitlement -n openshift-config-managed -o json | \
+  jq 'del(.metadata.resourceVersion)' | jq 'del(.metadata.creationTimestamp)' | \
+  jq 'del(.metadata.uid)' | jq 'del(.metadata.namespace)' | \
+  oc -n openshift-virtualization-os-images create -f -
+  ```
+1. Create and build the getiso image
+  ```
+  oc create -f ./k8/win-base-pipeline/build-iso-fetcher.yaml 
+  ```
+1. Trigger a build to create the iso puller image
+  ```
+  oc start-build buildiso -n openshift-virtualization-os-images
+  ```
+1. Create the pipeline to generate the base windows iso
+  ```
+  oc apply -f ./k8/win-base-pipeline/windows-efi-installer-pipeline.yaml
+  ```
+1. Create the pipelinerun which will actually download the iso and build the base windows server golden image
+  ```
+  oc create -f ./k8/win-base-pipeline/windows-efi-installer-pipelinerun.yaml
+  ```
+
 ### Install OSSM operators
 
 *(Assumes the OpenShift Virtualization operator has already been installed and is up and running)*  

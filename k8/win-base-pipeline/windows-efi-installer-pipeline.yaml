@@ -1,0 +1,505 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: windows-efi-installer
+  namespace: openshift-virtualization-os-images
+spec:
+  description: This pipeline installs Windows 11/2k22 into a new DataVolume. Then the  DataVolume is suitable to be used as a default boot source or golden image  for Windows 11/2k22 VMs. Different OS versions requires different  customizeConfigMapName parameter with unattend.xml.
+  finally:
+    - name: cleanup-vm
+      params:
+        - name: vmName
+          value: $(tasks.create-vm.results.name)
+        - name: vmNamespace
+          value: $(tasks.create-vm.results.namespace)
+        - name: delete
+          value: 'true'
+      taskRef:
+        kind: Task
+        params:
+          - name: catalog
+            value: kubevirt-tekton-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: cleanup-vm
+          - name: version
+            value: v0.19.0
+        resolver: hub
+      timeout: 10m0s
+    - name: delete-imported-iso
+      params:
+        - name: deleteObject
+          value: 'true'
+        - name: deleteObjectKind
+          value: DataVolume
+        - name: deleteObjectName
+          value: $(tasks.import-win-iso.results.name)
+        - name: namespace
+          value: $(tasks.import-win-iso.results.namespace)
+      taskRef:
+        kind: Task
+        params:
+          - name: catalog
+            value: kubevirt-tekton-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: modify-data-object
+          - name: version
+            value: v0.19.0
+        resolver: hub
+    - name: delete-vm-rootdisk
+      params:
+        - name: deleteObject
+          value: 'true'
+        - name: deleteObjectKind
+          value: DataVolume
+        - name: deleteObjectName
+          value: $(tasks.create-vm-root-disk.results.name)
+        - name: namespace
+          value: $(tasks.create-vm-root-disk.results.namespace)
+      taskRef:
+        kind: Task
+        params:
+          - name: catalog
+            value: kubevirt-tekton-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: modify-data-object
+          - name: version
+            value: v0.19.0
+        resolver: hub
+  params:
+    - default: u1.large
+      description: Name of VirtualMachineClusterInstancetype object
+      name: instanceTypeName
+      type: string
+    - default: VirtualMachineClusterInstancetype
+      description: Kind of VirtualMachineInstancetype object
+      name: instanceTypeKind
+      type: string
+    - default: windows.11
+      description: Name of VirtualMachineClusterPreference object
+      name: preferenceName
+      type: string
+    - default: VirtualMachineClusterPreference
+      description: Kind of virtualMachinePreference object
+      name: virtualMachinePreferenceKind
+      type: string
+    - default: windows11-autounattend
+      description: 'Name of the ConfigMap containing the sysprep configuration files (autounattend.xml, etc.). For example windows11-autounattend or windows2022-autounattend. It is possible to provide customize ConfigMaps created by the user too.'
+      name: autounattendConfigMapName
+      type: string
+    - default: 'quay.io/kubevirt/virtio-container-disk:v1.2.0'
+      description: Reference to the containerdisk containing the virtio-win drivers ISO.
+      name: virtioContainerDiskName
+      type: string
+    - default: win11
+      description: Name of the base DataVolume which is created. Pre-installed Windows VMs can be created from this DataVolume.
+      name: baseDvName
+      type: string
+    - default: openshift-virtualization-os-images
+      description: Namespace of the base DataVolume which is created.
+      name: baseDvNamespace
+      type: string
+    - default: win11
+      description: Name of Windows ISO datavolume
+      name: isoDVName
+      type: string
+  results:
+    - description: Name of the created base DataVolume
+      name: baseDvName
+      value: $(tasks.create-base-dv.results.name)
+    - description: Namespace of the created base DataVolume
+      name: baseDvNamespace
+      value: $(tasks.create-base-dv.results.namespace)
+  tasks:
+    - name: get-server-iso
+      taskRef:
+        kind: Task
+        name: get-iso-url
+    - name: import-win-iso
+      params:
+        - name: manifest
+          value: |-
+            apiVersion: cdi.kubevirt.io/v1beta1
+            kind: DataVolume
+            metadata:
+              generateName: $(params.isoDVName)-
+            spec:
+              source:
+                http:
+                  url: $(tasks.get-server-iso.results.windows-iso-url)
+              storage:
+                volumeMode: Filesystem
+                resources:
+                  requests:
+                    storage: 9Gi
+        - name: waitForSuccess
+          value: 'false'
+        - name: allowReplace
+          value: 'true'
+      runAfter:
+        - get-server-iso
+      taskRef:
+        kind: Task
+        params:
+          - name: catalog
+            value: kubevirt-tekton-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: modify-data-object
+          - name: version
+            value: v0.19.0
+        resolver: hub
+    - name: modify-windows-iso-file
+      params:
+        - name: pvcName
+          value: $(tasks.import-win-iso.results.name)
+      runAfter:
+        - import-win-iso
+        - create-vm-root-disk
+      taskRef:
+        kind: Task
+        params:
+          - name: catalog
+            value: kubevirt-tekton-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: modify-windows-iso-file
+          - name: version
+            value: v0.19.0
+        resolver: hub
+    - name: create-vm-root-disk
+      params:
+        - name: manifest
+          value: |-
+            apiVersion: cdi.kubevirt.io/v1beta1
+            kind: DataVolume
+            metadata:
+              generateName: windows-efi-root-disk-
+            spec:
+              storage:
+                resources:
+                  requests:
+                    storage: 20Gi
+              source:
+                blank: {}
+        - name: waitForSuccess
+          value: 'false'
+      taskRef:
+        kind: Task
+        params:
+          - name: catalog
+            value: kubevirt-tekton-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: modify-data-object
+          - name: version
+            value: v0.19.0
+        resolver: hub
+    - name: create-vm
+      params:
+        - name: runStrategy
+          value: RerunOnFailure
+        - name: manifest
+          value: |-
+            apiVersion: kubevirt.io/v1
+            kind: VirtualMachine
+            metadata:
+              generateName: windows-efi-
+            spec:
+              instancetype:
+                kind: $(params.instanceTypeKind)
+                name: $(params.instanceTypeName)
+              preference:
+                kind: $(params.virtualMachinePreferenceKind)
+                name: $(params.preferenceName)
+              template:
+                spec:
+                  evictionStrategy: LiveMigrateIfPossible
+                  domain:
+                    devices:
+                      disks:
+                        - cdrom:
+                            bus: sata
+                          name: installcdrom
+                          bootOrder: 2
+                        - disk:
+                            bus: virtio
+                          name: rootdisk
+                          bootOrder: 1
+                        - cdrom:
+                            bus: sata
+                          name: virtiocontainerdisk
+                        - cdrom:
+                            bus: sata
+                          name: sysprep
+                  volumes:
+                  - name: installcdrom
+                    persistentVolumeClaim:
+                      claimName: $(tasks.import-win-iso.results.name)
+                  - name: virtiocontainerdisk
+                    containerDisk:
+                      image: $(params.virtioContainerDiskName)
+                  - name: sysprep
+                    sysprep:
+                      configMap: 
+                        name: $(params.autounattendConfigMapName)
+                  - dataVolume:
+                      name:  $(tasks.create-vm-root-disk.results.name)
+                    name: rootdisk
+      runAfter:
+        - modify-windows-iso-file
+      taskRef:
+        kind: Task
+        params:
+          - name: catalog
+            value: kubevirt-tekton-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: create-vm-from-manifest
+          - name: version
+            value: v0.19.0
+        resolver: hub
+    - name: wait-for-vmi-status
+      params:
+        - name: vmiName
+          value: $(tasks.create-vm.results.name)
+        - name: vmiNamespace
+          value: $(tasks.create-vm.results.namespace)
+        - name: successCondition
+          value: status.phase == Succeeded
+        - name: failureCondition
+          value: 'status.phase in (Failed, Unknown)'
+      runAfter:
+        - create-vm
+      taskRef:
+        kind: Task
+        params:
+          - name: catalog
+            value: kubevirt-tekton-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: wait-for-vmi-status
+          - name: version
+            value: v0.19.0
+        resolver: hub
+      timeout: 2h0m0s
+    - name: create-base-dv
+      params:
+        - name: manifest
+          value: |
+            apiVersion: cdi.kubevirt.io/v1beta1
+            kind: DataVolume
+            metadata:
+              annotations:
+                "cdi.kubevirt.io/storage.bind.immediate.requested": "true"
+              labels:
+                "instancetype.kubevirt.io/default-instancetype-kind": $(params.instanceTypeKind)
+                "instancetype.kubevirt.io/default-instancetype": $(params.instanceTypeName)
+                "instancetype.kubevirt.io/default-preference-kind": $(params.virtualMachinePreferenceKind)
+                "instancetype.kubevirt.io/default-preference": $(params.preferenceName)
+              name: $(params.baseDvName)
+              namespace: $(params.baseDvNamespace)
+            spec:
+              storage: {}
+              source:
+                pvc:
+                  name: $(tasks.create-vm-root-disk.results.name)
+                  namespace: $(tasks.create-vm-root-disk.results.namespace)
+        - name: waitForSuccess
+          value: 'true'
+        - name: allowReplace
+          value: 'true'
+      runAfter:
+        - wait-for-vmi-status
+      taskRef:
+        kind: Task
+        params:
+          - name: catalog
+            value: kubevirt-tekton-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: modify-data-object
+          - name: version
+            value: v0.19.0
+        resolver: hub
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: windows2k22-autounattend
+  namespace: openshift-virtualization-os-images
+data:
+  autounattend.xml: |
+    <?xml version="1.0" encoding="utf-8"?>
+    <unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+        <servicing>
+            <package action="configure">
+                <assemblyIdentity name="Microsoft-Windows-ServerDatacenterEvalEdition" version="10.0.20348.587" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="" />
+            </package>
+        </servicing>
+        <settings pass="windowsPE">
+            <component language="neutral" name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <SetupUILanguage>
+                    <UILanguage>en-US</UILanguage>
+                </SetupUILanguage>
+                <InputLocale>en-US</InputLocale>
+                <SystemLocale>en-US</SystemLocale>
+                <UILanguage>en-US</UILanguage>
+                <UILanguageFallback>en-US</UILanguageFallback>
+                <UserLocale>en-US</UserLocale>
+            </component>
+            <component language="neutral" name="Microsoft-Windows-PnpCustomizationsWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <DriverPaths>
+                    <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+                        <Path>E:\amd64\2k22\</Path>
+                    </PathAndCredentials>
+                </DriverPaths>
+            </component>
+            <component language="neutral" name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <DiskConfiguration>
+                    <Disk wcm:action="add">
+                        <CreatePartitions>
+                            <CreatePartition wcm:action="add">
+                                <Order>1</Order>
+                                <Type>Primary</Type>
+                                <Size>700</Size>
+                            </CreatePartition>
+                            <CreatePartition wcm:action="add">
+                                <Order>2</Order>
+                                <Type>EFI</Type>
+                                <Size>100</Size>
+                            </CreatePartition>
+                            <CreatePartition wcm:action="add">
+                                <Order>3</Order>
+                                <Type>MSR</Type>
+                                <Size>128</Size>
+                            </CreatePartition>
+                            <CreatePartition wcm:action="add">
+                                <Order>4</Order>
+                                <Type>Primary</Type>
+                                <Extend>true</Extend>
+                            </CreatePartition>
+                        </CreatePartitions>
+                        <ModifyPartitions>
+                            <ModifyPartition wcm:action="add">
+                                <Order>1</Order>
+                                <PartitionID>1</PartitionID>
+                                <Label>WINRE</Label>
+                                <Format>NTFS</Format>
+                                <TypeID>DE94BBA4-06D1-4D40-A16A-BFD50179D6AC</TypeID>
+                            </ModifyPartition>
+                            <ModifyPartition wcm:action="add">
+                                <Order>2</Order>
+                                <PartitionID>2</PartitionID>
+                                <Label>EFI</Label>
+                                <Format>FAT32</Format>
+                            </ModifyPartition>
+                            <ModifyPartition wcm:action="add">
+                                <Order>3</Order>
+                                <PartitionID>3</PartitionID>
+                            </ModifyPartition>
+                            <ModifyPartition wcm:action="add">
+                                <Order>4</Order>
+                                <PartitionID>4</PartitionID>
+                                <Label>Windows</Label>
+                                <Letter>C</Letter>
+                                <Format>NTFS</Format>
+                            </ModifyPartition>
+                        </ModifyPartitions>
+                        <DiskID>0</DiskID>
+                        <WillWipeDisk>true</WillWipeDisk>
+                    </Disk>
+                </DiskConfiguration>
+                <ImageInstall>
+                    <OSImage>
+                        <InstallFrom>
+                            <MetaData wcm:action="add">
+                                <Key>/IMAGE/NAME</Key>
+                                <Value>Windows Server 2022 SERVERDATACENTER</Value>
+                            </MetaData>
+                        </InstallFrom>
+                        <InstallTo>
+                            <DiskID>0</DiskID>
+                            <PartitionID>4</PartitionID>
+                        </InstallTo>
+                    </OSImage>
+                </ImageInstall>
+                <UserData>
+                    <AcceptEula>true</AcceptEula>
+                    <FullName>AdminAccount</FullName>
+                    <Organization>OrgName</Organization>
+                </UserData>
+            </component>
+        </settings>
+        <settings pass="specialize">
+            <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+                <InputLocale>0409:00000409</InputLocale>
+                <SystemLocale>en-US</SystemLocale>
+                <UILanguage>en-US</UILanguage>
+                <UserLocale>en-US</UserLocale>
+            </component>
+        </settings>
+        <settings pass="oobeSystem">
+            <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+                <Reseal>
+                    <Mode>Audit</Mode>
+                </Reseal>
+            </component>
+        </settings>
+        <settings pass="auditUser">
+            <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+                <RunSynchronous>
+                    <RunSynchronousCommand wcm:action="add">
+                        <Order>1</Order>
+                        <Path>PowerShell -ExecutionPolicy Bypass -NoProfile F:\post-install.ps1</Path>
+                        <Description>Run post-install script</Description>
+                    </RunSynchronousCommand>
+                </RunSynchronous>
+                <Generalize>
+                    <ForceShutdownNow>true</ForceShutdownNow>
+                    <Mode>OOBE</Mode>
+                </Generalize>
+            </component>
+        </settings>
+    </unattend>
+  post-install.ps1: |
+    # Install virtio guest drivers
+    Start-Process msiexec -Wait -ArgumentList "/i E:\virtio-win-gt-x64.msi /qn /passive /norestart"
+
+    # Install qemu guest agent
+    Start-Process msiexec -Wait -ArgumentList "/i E:\guest-agent\qemu-ga-x86_64.msi /qn /passive /norestart"
+
+    # Rename cached unattend.xml to avoid it is picked up by sysprep
+    mv C:\Windows\Panther\unattend.xml C:\Windows\Panther\unattend.install.xml
+
+    # Eject CD, to avoid that the unattend.xml on the CD is picked up by sysprep
+    (New-Object -COMObject Shell.Application).NameSpace(17).ParseName("F:").InvokeVerb("Eject")
