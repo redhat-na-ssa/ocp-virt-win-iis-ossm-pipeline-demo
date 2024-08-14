@@ -7,6 +7,8 @@ metadata:
   description: Create a project to host workloads
 spec:
   owner: backstage/techdocs-core
+  type: service
+  
   parameters:
     - title: Fill in some steps
       required:
