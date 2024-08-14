@@ -1,4 +1,22 @@
 apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: get-iso-url
+  namespace: openshift-virtualization-os-images
+spec:
+  results:
+    - description: the url of the windows iso to download
+      name: windows-iso-url
+      type: string
+  steps:
+    - computeResources: {}
+      image: 'quay.io/mathianasj/getiso:latest'
+      name: echo
+      script: |
+        #!/bin/sh
+        /opt/app-root/src/getserveriso.sh > "$(results.windows-iso-url.path)"
+---
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: windows-efi-installer
