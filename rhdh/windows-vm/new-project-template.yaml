@@ -2,8 +2,8 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 # some metadata about the template itself
 metadata:
-  name: workload-project
-  title: Workload Project
+  name: workload-project2
+  title: Workload Project2
   description: Create a project to host workloads
 spec:
   owner: backstage/techdocs-core
