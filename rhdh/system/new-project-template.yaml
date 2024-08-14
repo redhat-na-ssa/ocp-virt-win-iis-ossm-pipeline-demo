@@ -34,24 +34,15 @@ spec:
                 - User
     - title: Choose a location
       required:
-        - repo
+        - repoUrl
       properties:
-        repo:
+        repoUrl:
           title: Repository Location
-          type: object
-          properties:
-            host:
-              title: Repo Host
-              type: string
-              description: Your SCM host
-            owner:
-              title: Repo Owner
-              type: string
-              description: Your SCM host organization/group
-              default: development
-              enum:
-                - development
-
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
 
   # here's the steps that are executed in series in the scaffolder backend
   steps:
@@ -66,10 +57,11 @@ spec:
 
     - id: publish
       name: Publish
-      action: publish:gitlab
+      action: publish:github
       input:
-        repoUrl: "${{ parameters.repo.host }}?owner=${{ parameters.repo.owner }}&repo=${{parameters.component_id}}"
-        repoVisibility: public
+        allowedHosts: ['github.com']
+        description: This is ${{ parameters.name }}
+        repoUrl: ${{ parameters.repoUrl }}
 
     - id: register
       name: Register
