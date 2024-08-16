@@ -63,7 +63,10 @@ spec:
           name: ${{ parameters.name }}
           owner: ${{ user.entity.metadata.name }}
           host: ${{ parameters.repo.host }}
-          destination: ${{ parameters.repo.owner }}/${{ parameters.component_id }}
+          destination: ${{ parameters.repo.owner }}/${{ parameters.name }}
+          repo_destination: https://${{ parameters.repo.host }}/${{ parameters.repo.owner }}/${{parameters.name}}.git
+
+
 
     - id: publish
       name: Publish
@@ -87,4 +90,4 @@ spec:
         argoInstance: main
         namespace: janus-argocd
         repoUrl: https://${{ parameters.repo.host }}/${{ parameters.repo.owner }}/${{ parameters.name }}.git
-        path: 'argocd/'
+        path: 'argocd-app-of-apps/'
