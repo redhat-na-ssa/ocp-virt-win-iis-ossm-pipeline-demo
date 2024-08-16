@@ -11,46 +11,28 @@ spec:
 
   # these are the steps which are rendered in the frontend with the form input
   parameters:
-    - title: Fill in some steps
+    - title: What is the existing system
       required:
-        - name
-        - owner
+        - system
       properties:
-        name:
+        system:
           title: Name
           type: string
-          description: Unique name of the component
+          description: Existing system to add the VM to
           ui:autofocus: true
-          ui:options:
-            rows: 5
-        owner:
-          title: Owner
-          type: string
           ui:field: EntityPicker
           ui:options:
             catalogFilter:
-              kind:
-                - Group
-                - User
-    - title: Choose a location
+              - kind: System
+    - title: IIS Deployment Options
       required:
-        - repo
+        - zip
       properties:
-        repo:
-          title: Repository Location
-          type: object
-          properties:
-            host:
-              title: Repo Host
-              type: string
-              description: Your SCM host
-            owner:
-              title: Repo Owner
-              type: string
-              description: Your SCM host organization/group
-              default: development
-              enum:
-                - development
+        zip:
+          title: ZIP Location
+          type: string
+          description: The location to the zip file of the IIS app to deploy
+          ui:autofocus: true
 
 
   # here's the steps that are executed in series in the scaffolder backend
