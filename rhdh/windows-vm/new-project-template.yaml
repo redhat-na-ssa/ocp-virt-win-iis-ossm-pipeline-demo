@@ -2,9 +2,9 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 # some metadata about the template itself
 metadata:
-  name: workload-project2
-  title: Workload Project2
-  description: Create a project to host workloads
+  name: windows-iis-vm
+  title: Windows IIS Application
+  description: Create a VM that will deploy an IIS application from zip
 spec:
   owner: backstage/techdocs-core
   type: service
