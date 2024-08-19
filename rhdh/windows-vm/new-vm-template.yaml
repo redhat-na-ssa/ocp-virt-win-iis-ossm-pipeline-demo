@@ -68,10 +68,11 @@ spec:
 
     - id: publish
       name: Publish
-      action: publish:gitlab
+      action: gitlab:repo:push
       input:
         repoUrl: "${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}?owner=development&repo=${{ steps.systemFetch.output.entity.metadata.name }}"
-        repoVisibility: public
+        branchName: master
+        commitMessage: "Add IIS app ${{ parameters.name }}"
 
     - id: register
       name: Register
