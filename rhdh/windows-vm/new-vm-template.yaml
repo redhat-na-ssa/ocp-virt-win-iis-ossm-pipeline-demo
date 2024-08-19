@@ -56,10 +56,15 @@ spec:
           name: ${{ steps.systemFetch.output.entity.metadata.name }}
           
     - id: debug1
-      name: debug message
+      name: annotations
       action: debug:log
       input:
-        message: entity fetched ${{ steps.systemFetch.output | dump }}
+        message: entity fetched ${{ steps.systemFetch.output.entity.metadata.annotations | dump }}
+    - id: debug2
+      name: gitlab host
+      action: debug:log
+      input:
+        message: entity fetched ${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] | dump }}
 
     - id: publish
       name: Publish
