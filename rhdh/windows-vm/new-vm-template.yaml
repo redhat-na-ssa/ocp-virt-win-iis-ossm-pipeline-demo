@@ -70,7 +70,7 @@ spec:
       name: Publish
       action: publish:gitlab
       input:
-        repoUrl: "https://${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}?owner=development&repo=${{ steps.systemFetch.output.entity.metadata.name }}"
+        repoUrl: "${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}?owner=development&repo=${{ steps.systemFetch.output.entity.metadata.name }}"
         repoVisibility: public
 
     - id: register
