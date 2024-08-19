@@ -64,7 +64,7 @@ spec:
       name: gitlab host
       action: debug:log
       input:
-        message: entity fetched ${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] | dump }}
+        message: entity fetched ${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}
 
     - id: publish
       name: Publish
