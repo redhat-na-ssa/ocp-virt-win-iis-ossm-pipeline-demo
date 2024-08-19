@@ -1,0 +1,46 @@
+- name: Add label to pipelines operator
+  kubernetes.core.k8s:
+    state: patched
+    kind: Subscription
+    api_version: operators.coreos.com/v1alpha1
+    name: openshift-pipelines-operator
+    namespace: openshift-operators
+    definition:
+      metadata:
+        labels:
+          app.kubernetes.io/managed-by: "Helm"
+        annotations:
+          "meta.helm.sh/release-name": "subscriptions"
+          "meta.helm.sh/release-namespace": "default"
+- name: Install subscriptions
+  kubernetes.core.helm:
+    name: subscriptions
+    chart_ref: "../k8/helm/charts/subscriptions"
+    release_namespace: default
+- name: Upgrade pipelines version
+  kubernetes.core.k8s:
+    state: present
+    template: 'templates/pipelines.yaml'
+- name: Wait for hco webhook ready
+  shell: "kubectl wait --namespace=openshift-cnv --for=condition=Ready pods --selector name=hyperconverged-cluster-webhook --timeout=600s"
+  register: control_plane_pods_ready
+- name: Install virt config
+  kubernetes.core.helm:
+    name: virt-config
+    chart_ref: "../k8/helm/charts/virt-config"
+    release_namespace: default
+- name: Wait for openshift-virtualization-os-images namespace
+  shell: "kubectl wait namespace openshift-virtualization-os-images --for=jsonpath={.status.phase}=Active"
+  register: control_plane_pods_ready
+- name: Install windows pipeline
+  kubernetes.core.helm:
+    name: win-base-pipeline
+    chart_ref: "../k8/helm/charts/win-base-pipeline"
+    release_namespace: default
+- name: Wait for getiso task
+  shell: "kubectl wait task get-iso-url --for=jsonpath={.metadata.name}=get-iso-url --namespace openshift-virtualization-os-images"
+  register: control_plane_pods_ready
+- name: Run windows base image pipeline
+  kubernetes.core.k8s:
+    state: present
+    template: 'templates/pipelinerun.yaml.j2'

@@ -1,0 +1,65 @@
+apiVersion: machine.openshift.io/v1beta1
+kind: MachineSet
+{{- with ( ( index (lookup "machine.openshift.io/v1beta1" "MachineSet" "openshift-machine-api" "").items 0) ) }}
+metadata:
+  name: {{ index .metadata.labels "machine.openshift.io/cluster-api-cluster" }}-worker-bm-{{ .spec.template.spec.providerSpec.value.placement.availabilityZone }}
+  namespace: openshift-machine-api
+  labels:
+    machine.openshift.io/cluster-api-cluster: {{ index .metadata.labels "machine.openshift.io/cluster-api-cluster" }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      machine.openshift.io/cluster-api-cluster: {{ index .metadata.labels "machine.openshift.io/cluster-api-cluster" }}
+      machine.openshift.io/cluster-api-machineset: {{ index .metadata.labels "machine.openshift.io/cluster-api-cluster" }}-worker-bm-{{ .spec.template.spec.providerSpec.value.placement.availabilityZone }}
+  template:
+    metadata:
+      labels:
+        machine.openshift.io/cluster-api-cluster: {{ index .metadata.labels "machine.openshift.io/cluster-api-cluster" }}
+        machine.openshift.io/cluster-api-machine-role: worker
+        machine.openshift.io/cluster-api-machine-type: worker
+        machine.openshift.io/cluster-api-machineset: {{ index .metadata.labels "machine.openshift.io/cluster-api-cluster" }}-worker-bm-{{ .spec.template.spec.providerSpec.value.placement.availabilityZone }}
+    spec:
+      lifecycleHooks: {}
+      metadata: {}
+      providerSpec:
+        value:
+          userDataSecret:
+            name: worker-user-data
+          placement:
+            availabilityZone: {{ .spec.template.spec.providerSpec.value.placement.availabilityZone }}
+            region: {{ .spec.template.spec.providerSpec.value.placement.region }}
+          credentialsSecret:
+            name: aws-cloud-credentials
+          instanceType: i3.metal
+          metadata:
+            creationTimestamp: null
+          blockDevices:
+            - ebs:
+                encrypted: true
+                iops: 0
+                kmsKey:
+                  arn: ''
+                volumeSize: 100
+                volumeType: gp2
+          securityGroups:
+            - filters:
+                - name: 'tag:Name'
+                  values:
+                    - {{ index .metadata.labels "machine.openshift.io/cluster-api-cluster" }}-worker-sg
+          kind: AWSMachineProviderConfig
+          metadataServiceOptions: {}
+          tags:
+            - name: kubernetes.io/cluster/{{ index .metadata.labels "machine.openshift.io/cluster-api-cluster" }}
+              value: owned
+          deviceIndex: 0
+          ami:
+            id: {{ .spec.template.spec.providerSpec.value.ami.id }}
+          subnet:
+            filters:
+              - name: 'tag:Name'
+                values: {{ index (index .spec.template.spec.providerSpec.value.subnet.filters 0).values }}
+          apiVersion: machine.openshift.io/v1beta1
+          iamInstanceProfile:
+            id: {{ index .metadata.labels "machine.openshift.io/cluster-api-cluster" }}-worker-profile
+{{- end }}

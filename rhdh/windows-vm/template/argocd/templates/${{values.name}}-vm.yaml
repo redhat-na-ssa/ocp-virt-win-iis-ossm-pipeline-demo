@@ -50,7 +50,7 @@ spec:
       kind: DataVolume
       metadata:
         creationTimestamp: null
-        name: win2k22-lavender-dog-24
+        name: ${{values.name}}-vm
       spec:
         sourceRef:
           kind: DataSource
@@ -69,7 +69,7 @@ spec:
         vm.kubevirt.io/workload: server
       creationTimestamp: null
       labels:
-        kubevirt.io/domain: win2k22-lavender-dog-24
+        kubevirt.io/domain: ${{values.name}}-vm
         kubevirt.io/size: medium
     spec:
       architecture: amd64
@@ -142,7 +142,7 @@ spec:
       terminationGracePeriodSeconds: 3600
       volumes:
         - dataVolume:
-            name: win2k22-lavender-dog-24
+            name: ${{values.name}}-vm
           name: rootdisk
         - containerDisk:
             image: 'registry.redhat.io/container-native-virtualization/virtio-win-rhel9@sha256:dec184c5c2de08a332f5cea6d964a792ca3630e22cebcb929f90d49cd4545609'
