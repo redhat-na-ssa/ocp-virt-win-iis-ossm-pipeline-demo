@@ -54,6 +54,11 @@ spec:
         url: ./template
         values:
           name: ${{ parameters.name }}
+          owner: ${{ user.entity.metadata.name }}
+          host: ${{ parameters.repo.host }}
+          destination: ${{ parameters.repo.owner }}/${{ parameters.name }}
+          repo_destination: https://${{ parameters.repo.host }}/${{ parameters.repo.owner }}/${{parameters.name}}.git
+          namespace: ${{steps.systemFetch.output.entity.metadata.name}}-dev
           
     - id: debug1
       name: annotations
