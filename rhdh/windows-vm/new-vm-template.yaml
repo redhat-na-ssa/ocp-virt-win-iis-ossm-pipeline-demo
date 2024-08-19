@@ -55,6 +55,11 @@ spec:
         values:
           name: ${{ steps.systemFetch.entity.metadata.name }}
           
+    - id: debug1
+      name: debug message
+      action: debug:log
+      input:
+        message: entity fetched ${{ steps.systemFetch.entity }}
 
     - id: publish
       name: Publish
