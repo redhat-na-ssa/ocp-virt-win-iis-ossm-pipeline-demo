@@ -59,7 +59,7 @@ spec:
       name: debug message
       action: debug:log
       input:
-        message: entity fetched ${{ steps.systemFetch }}
+        message: entity fetched ${{ steps.systemFetch.output | dump }}
 
     - id: publish
       name: Publish
