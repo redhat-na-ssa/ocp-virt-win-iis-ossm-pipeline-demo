@@ -62,6 +62,7 @@ spec:
           repo_destination: https://${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}/development/${{ steps.systemFetch.output.entity.metadata.name }}.git
           namespace: ${{steps.systemFetch.output.entity.metadata.name}}-dev
           appname: ${{ parameters.name }}
+          zipfile: ${{ parameters.zip }}
           
     - id: debug1
       name: annotations
