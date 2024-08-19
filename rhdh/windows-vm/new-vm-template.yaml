@@ -27,7 +27,12 @@ spec:
     - title: IIS Deployment Options
       required:
         - zip
+        - name
       properties:
+        name:
+          title: Name of IIS App
+          type: string
+          description: This is the name of the application
         zip:
           title: ZIP Location
           type: string
@@ -37,20 +42,25 @@ spec:
 
   # here's the steps that are executed in series in the scaffolder backend
   steps:
+    - id: systemFetch
+      name: Fetch System Entity
+      action: catalog:fetch
+      input:
+        entityRef: ${{ parameters.system }}
     - id: fetch-base
       name: Fetch Base
       action: fetch:template
       input:
         url: ./template
         values:
-          name: ${{ parameters.name }}
-          owner: ${{ parameters.owner }}
+          name: ${{ steps.systemFetch.entity.metadata.name }}
+          
 
     - id: publish
       name: Publish
       action: publish:gitlab
       input:
-        repoUrl: "${{ parameters.repo.host }}?owner=${{ parameters.repo.owner }}&repo=${{parameters.name}}"
+        repoUrl: "https://${{ steps.systemFetch.entity.metadata.annotation['gitlab.com/instance'] }}?owner=development&repo=${{ steps.systemFetch.entity.metadata.name }}"
         repoVisibility: public
 
     - id: register
