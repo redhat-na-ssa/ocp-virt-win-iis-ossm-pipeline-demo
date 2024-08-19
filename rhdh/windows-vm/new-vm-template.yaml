@@ -53,7 +53,7 @@ spec:
       input:
         url: ./template
         values:
-          name: ${{ steps.systemFetch.entity.metadata.name }}
+          name: ${{ steps.systemFetch.output.entity.metadata.name }}
           
     - id: debug1
       name: debug message
@@ -65,7 +65,7 @@ spec:
       name: Publish
       action: publish:gitlab
       input:
-        repoUrl: "https://${{ steps.systemFetch.entity.metadata.annotations['gitlab.com/instance'] }}?owner=development&repo=${{ steps.systemFetch.entity.metadata.name }}"
+        repoUrl: "https://${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}?owner=development&repo=${{ steps.systemFetch.output.entity.metadata.name }}"
         repoVisibility: public
 
     - id: register
