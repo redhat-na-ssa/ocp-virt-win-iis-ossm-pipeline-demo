@@ -53,7 +53,7 @@ spec:
       input:
         url: ./template
         values:
-          name: ${{ steps.systemFetch.output.entity.metadata.name }}
+          name: ${{ parameters.name }}
           
     - id: debug1
       name: annotations
