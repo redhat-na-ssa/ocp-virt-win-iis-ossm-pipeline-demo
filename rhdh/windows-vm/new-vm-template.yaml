@@ -60,7 +60,7 @@ spec:
       name: Publish
       action: publish:gitlab
       input:
-        repoUrl: "https://${{ steps.systemFetch.entity.metadata.annotation['gitlab.com/instance'] }}?owner=development&repo=${{ steps.systemFetch.entity.metadata.name }}"
+        repoUrl: "https://${{ steps.systemFetch.entity.metadata.annotations['gitlab.com/instance'] }}?owner=development&repo=${{ steps.systemFetch.entity.metadata.name }}"
         repoVisibility: public
 
     - id: register
@@ -68,4 +68,4 @@ spec:
       action: catalog:register
       input:
         repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
-        catalogInfoPath: '/catalog-info.yaml'
+        catalogInfoPath: '/${{values.name}}-vm-component.yaml'
