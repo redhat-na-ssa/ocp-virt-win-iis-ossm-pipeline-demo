@@ -33,11 +33,13 @@ spec:
           title: Name of IIS App
           type: string
           description: This is the name of the application
+          ui:autofocus: true
+          default: "dotnet-iis-app"
         zip:
           title: ZIP Location
           type: string
           description: The location to the zip file of the IIS app to deploy
-          ui:autofocus: true
+          default: https://github.com/JRBowman/ocp-virt-win-iis-demo/raw/master/dotnet-iis-app.zip
 
 
   # here's the steps that are executed in series in the scaffolder backend
@@ -59,6 +61,7 @@ spec:
           destination: development/${{ steps.systemFetch.output.entity.metadata.name }}
           repo_destination: https://${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}/development/${{ steps.systemFetch.output.entity.metadata.name }}.git
           namespace: ${{steps.systemFetch.output.entity.metadata.name}}-dev
+          appname: ${{ parameters.name }}
           
     - id: debug1
       name: annotations

@@ -79,9 +79,9 @@ data:
     ## 2.) Add the .NET ASP Application to IIS:
 
     # Variables
-    $dotnetUrl = "https://github.com/JRBowman/ocp-virt-win-iis-demo/raw/master/dotnet-iis-app.zip"
-    $zipFilePath = "C:\Temp\dotnet-iis-app.zip"
-    $destinationPath = "C:\Temp\dotnet-iis-app"
+    $dotnetUrl = "${{ values.zipfile }}"
+    $zipFilePath = "C:\Temp\${{ values.appname }}.zip"
+    $destinationPath = "C:\Temp\${{ values.appname }}"
     $iisDefaultSitePath = "C:\inetpub\wwwroot"
 
     # Create Temp Directory if it doesn't exist
@@ -97,7 +97,7 @@ data:
     [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFilePath, $destinationPath)
 
     # Copy the contents of the app to the IIS Directory:
-    Copy-Item -Path "$destinationPath\dotnet-iis-app\*" -Destination "$iisDefaultSitePath" -Recurse -Force
+    Copy-Item -Path "$destinationPath\${{ values.appname }}\*" -Destination "$iisDefaultSitePath" -Recurse -Force
 
     Write-Host "Contents copied to IIS Default Site directory successfully."
 
