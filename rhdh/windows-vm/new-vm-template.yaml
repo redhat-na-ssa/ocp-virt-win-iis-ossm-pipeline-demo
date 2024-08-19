@@ -78,5 +78,4 @@ spec:
       name: Register
       action: catalog:register
       input:
-        repoContentsUrl: https://${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}/development/${{ steps.systemFetch.output.entity.metadata.name }}/-/blob/master
-        catalogInfoPath: '/${{parameters.name}}-vm-component.yaml'
+        catalogInfoUrl: https://${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}/development/${{ steps.systemFetch.output.entity.metadata.name }}/-/blob/master/${{parameters.name}}-vm-component.yaml
