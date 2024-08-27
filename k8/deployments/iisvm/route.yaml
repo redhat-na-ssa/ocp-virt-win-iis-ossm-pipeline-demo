@@ -9,7 +9,7 @@ spec:
     name: iis-vm
     weight: 100
   port:
-    targetPort: http
+    targetPort: identity
   tls:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect
