@@ -1,0 +1,40 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: backstage-developer-hub-windows-app-config
+  namespace: backstage
+data:
+  app-config-win.yaml: |
+    catalog:
+      locations:
+      - rules:
+        - allow:
+          - Template
+        target: https://{{ gitlab_host }}/rhdh/software-templates/blob/main/showcase-templates.yaml
+        type: url
+      - rules:
+        - allow:
+          - Group
+          - User
+        target: https://{{ gitlab_host }}/rhdh/software-templates/blob/main/org.yaml
+        type: url
+      - rules:
+        - allow:
+          - Template
+        target: https://{{ gitlab_host }}/summit-lab/backstage-workshop/blob/master/showcase-templates.yaml
+        type: url
+      - rules:
+        - allow:
+          - Template
+        target: https://{{ gitlab_host }}/development/windows-templates/blob/add-rhdh-templates/rhdh/system/new-project-template.yaml
+        type: url
+      - rules:
+        - allow:
+          - Template
+        target: https://{{ gitlab_host }}/development/windows-templates/blob/add-rhdh-templates/rhdh/system/new-project-template.yaml
+        type: url
+      - rules:
+        - allow:
+          - Template
+        target: https://{{ gitlab_host }}/development/windows-templates/blob/add-rhdh-templates/rhdh/windows-vm/new-vm-template.yaml
+        type: url

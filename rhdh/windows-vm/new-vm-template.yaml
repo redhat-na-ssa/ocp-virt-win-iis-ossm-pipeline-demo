@@ -1,0 +1,90 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+# some metadata about the template itself
+metadata:
+  name: windows-iis-vm
+  title: Windows IIS Application
+  description: Create a VM that will deploy an IIS application from zip
+spec:
+  owner: backstage/techdocs-core
+  type: service
+
+  # these are the steps which are rendered in the frontend with the form input
+  parameters:
+    - title: What is the existing system
+      required:
+        - system
+      properties:
+        system:
+          title: Name
+          type: string
+          description: Existing system to add the VM to
+          ui:autofocus: true
+          ui:field: EntityPicker
+          ui:options:
+            catalogFilter:
+              - kind: System
+    - title: IIS Deployment Options
+      required:
+        - zip
+        - name
+      properties:
+        name:
+          title: Name of IIS App
+          type: string
+          description: This is the name of the application
+          ui:autofocus: true
+          default: "dotnet-iis-app"
+        zip:
+          title: ZIP Location
+          type: string
+          description: The location to the zip file of the IIS app to deploy
+          default: https://github.com/JRBowman/ocp-virt-win-iis-demo/raw/master/dotnet-iis-app.zip
+
+
+  # here's the steps that are executed in series in the scaffolder backend
+  steps:
+    - id: systemFetch
+      name: Fetch System Entity
+      action: catalog:fetch
+      input:
+        entityRef: ${{ parameters.system }}
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./template
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ user.entity.metadata.name }}
+          host: ${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}
+          destination: development/${{ steps.systemFetch.output.entity.metadata.name }}
+          repo_destination: https://${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}/development/${{ steps.systemFetch.output.entity.metadata.name }}.git
+          namespace: ${{steps.systemFetch.output.entity.metadata.name}}-dev
+          appname: ${{ parameters.name }}
+          zipfile: ${{ parameters.zip }}
+          
+    - id: debug1
+      name: annotations
+      action: debug:log
+      input:
+        message: entity fetched ${{ steps.systemFetch.output.entity.metadata.annotations | dump }}
+    - id: debug2
+      name: gitlab host
+      action: debug:log
+      input:
+        message: https://${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}?owner=development&repo=${{ steps.systemFetch.output.entity.metadata.name }}
+
+    - id: publish
+      name: Publish
+      action: gitlab:repo:push
+      input:
+        repoUrl: "${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}?owner=development&repo=${{ steps.systemFetch.output.entity.metadata.name }}"
+        branchName: master
+        commitMessage: "Add IIS app ${{ parameters.name }}"
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        catalogInfoUrl: https://${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}/development/${{ steps.systemFetch.output.entity.metadata.name }}/-/blob/master/${{parameters.name}}-vm-component.yaml

@@ -1,0 +1,58 @@
+- name: disable argo sync
+  kubernetes.core.k8s:
+    state: patched
+    kind: Application
+    api_version: argoproj.io/v1alpha1
+    name: backstage-gitops
+    namespace: openshift-gitops
+    definition:
+      spec:
+        syncPolicy:
+          automated:
+            prune: false
+            selfHeal: false
+- name: disable argo sync
+  kubernetes.core.k8s:
+    state: patched
+    kind: Application
+    api_version: argoproj.io/v1alpha1
+    name: backstage
+    namespace: openshift-gitops
+    definition:
+      spec:
+        syncPolicy:
+          automated:
+            prune: false
+            selfHeal: false
+- name: Add new DH config
+  kubernetes.core.k8s:
+    state: present
+    template: 'templates/dhconfig.yaml.j2'
+- name: Patch deployment to add configmap as mount and args
+  kubernetes.core.k8s:
+    state: patched
+    kind: Deployment
+    api_version: apps/v1
+    name: backstage-developer-hub
+    namespace: backstage
+    definition:
+      spec:
+        template:
+          spec:
+            volumes:
+              - name: backstage-developer-hub-windows-app-config
+                configMap:
+                  name: backstage-developer-hub-windows-app-config
+            containers:
+              - name: backstage-backend
+                volumeMounts:
+                  - name: backstage-developer-hub-windows-app-config
+                    mountPath: /opt/app-root/src/app-config-from-win-configmap.yaml
+                    subPath: app-config-win.yaml
+                args:
+                  - '--config'
+                  - dynamic-plugins-root/app-config.dynamic-plugins.yaml
+                  - '--config'
+                  - /opt/app-root/src/app-config-from-configmap.yaml
+                  - '--config'
+                  - /opt/app-root/src/app-config-from-win-configmap.yaml

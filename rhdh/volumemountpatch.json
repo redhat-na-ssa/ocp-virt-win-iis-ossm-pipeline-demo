@@ -1,0 +1,31 @@
+[
+  {
+    "op": "add",
+    "path": "/spec/template/spec/containers/0/volumeMounts/-",
+    "value": {
+      "name": "extra-config",
+      "mountPath": "/opt/app-root/src/app-config-from-configmap-windows.yaml",
+      "subPath": "app-config.yaml"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/volumes/-",
+    "value": {
+      "name": "extra-config",
+      "configMap": {
+        "name": "backstage-developer-hub-windows-app-config"
+      }
+    }
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/containers/0/args/-",
+    "value": "--config"
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/containers/0/args/-",
+    "value": "/opt/app-root/src/app-config-rhdh.yaml"
+  }
+]

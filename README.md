@@ -7,20 +7,10 @@
 
 ### Install Windows Base Image
 
-1. Copy the PKI entitlement key from the managed namespace (this is needed because we are using RHEL specific packages)
+1. Create the rbac and service account
   ```
-  oc get secret etc-pki-entitlement -n openshift-config-managed -o json | \
-  jq 'del(.metadata.resourceVersion)' | jq 'del(.metadata.creationTimestamp)' | \
-  jq 'del(.metadata.uid)' | jq 'del(.metadata.namespace)' | \
-  oc -n openshift-virtualization-os-images create -f -
-  ```
-1. Create and build the getiso image
-  ```
-  oc create -f ./k8/win-base-pipeline/build-iso-fetcher.yaml 
-  ```
-1. Trigger a build to create the iso puller image
-  ```
-  oc start-build buildiso -n openshift-virtualization-os-images
+  oc apply -f ./k8/win-base-pipeline/pipeline-rbac.yaml
+  oc apply -f ./k8/win-base-pipeline/pipeline-serviceaccount.yaml
   ```
 1. Create the pipeline to generate the base windows iso
   ```

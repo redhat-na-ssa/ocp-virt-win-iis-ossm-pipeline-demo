@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: ${{ values.name }}
+  description: ${{ values.name }}
+  annotations:
+    argocd/app-selector: rht-gitops.com/janus-argocd=${{values.name}}-bootstrap
+    backstage.io/kubernetes-id: ${{values.name}}
+    janus-idp.io/tekton: ${{values.name}}
+    backstage.io/source-location: url:https://${{values.host}}/${{values.destination}}
+    backstage.io/techdocs-ref: url:https://${{values.host}}/${{values.destination}}
+    gitlab.com/project-slug: ${{values.destination}}
+    gitlab.com/instance: ${{values.host}}
+
+spec:
+  owner: ${{ values.owner }}

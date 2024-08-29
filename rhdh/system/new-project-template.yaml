@@ -1,0 +1,93 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+# some metadata about the template itself
+metadata:
+  name: project
+  title: Project
+  description: Create a project to host workloads
+spec:
+  owner: backstage/techdocs-core
+  type: service
+  
+  parameters:
+    - title: Fill in some steps
+      required:
+        - name
+        - owner
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:autofocus: true
+          ui:options:
+            rows: 5
+        owner:
+          title: Owner
+          type: string
+          ui:field: EntityPicker
+          ui:options:
+            catalogFilter:
+              kind:
+                - Group
+                - User
+    - title: Choose a location
+      required:
+        - repo
+      properties:
+        repo:
+          title: Repository Location
+          type: object
+          properties:
+            host:
+              title: Repo Host
+              type: string
+              description: Your SCM host
+            owner:
+              title: Repo Owner
+              type: string
+              description: Your SCM host organization/group
+              default: development
+              enum:
+                - development
+
+
+  # here's the steps that are executed in series in the scaffolder backend
+  steps:
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./template
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ user.entity.metadata.name }}
+          host: ${{ parameters.repo.host }}
+          destination: ${{ parameters.repo.owner }}/${{ parameters.name }}
+          repo_destination: https://${{ parameters.repo.host }}/${{ parameters.repo.owner }}/${{parameters.name}}.git
+
+
+
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: "${{ parameters.repo.host }}?owner=${{ parameters.repo.owner }}&repo=${{parameters.name}}"
+        repoVisibility: public
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+    
+    - id: create-argocd-resources
+      name: Create ArgoCD Resources
+      action: argocd:create-resources
+      input:
+        appName: ${{ parameters.name }}-bootstrap
+        argoInstance: main
+        namespace: janus-argocd
+        repoUrl: https://${{ parameters.repo.host }}/${{ parameters.repo.owner }}/${{ parameters.name }}.git
+        path: 'argocd-app-of-apps/'
