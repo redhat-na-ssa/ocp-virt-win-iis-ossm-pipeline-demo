@@ -24,6 +24,10 @@
 - name: Wait for hco webhook ready
   shell: "kubectl wait --namespace=openshift-cnv --for=condition=Ready pods --selector name=hyperconverged-cluster-webhook --timeout=600s"
   register: control_plane_pods_ready
+  retries: 30
+  delay: 5
+  register: result
+  until: result.rc == 0
 - name: Install virt config
   kubernetes.core.helm:
     name: virt-config
@@ -32,6 +36,10 @@
 - name: Wait for openshift-virtualization-os-images namespace
   shell: "kubectl wait namespace openshift-virtualization-os-images --for=jsonpath={.status.phase}=Active"
   register: control_plane_pods_ready
+  retries: 30
+  delay: 5
+  register: result
+  until: result.rc == 0
 - name: Install windows pipeline
   kubernetes.core.helm:
     name: win-base-pipeline
@@ -40,6 +48,10 @@
 - name: Wait for getiso task
   shell: "kubectl wait task get-iso-url --for=jsonpath={.metadata.name}=get-iso-url --namespace openshift-virtualization-os-images"
   register: control_plane_pods_ready
+  retries: 30
+  delay: 5
+  register: result
+  until: result.rc == 0
 - name: Run windows base image pipeline
   kubernetes.core.k8s:
     state: present
