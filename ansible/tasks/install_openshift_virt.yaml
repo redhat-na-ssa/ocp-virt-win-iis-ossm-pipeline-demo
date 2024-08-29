@@ -26,6 +26,8 @@
   register: control_plane_pods_ready
   retries: 30
   delay: 5
+  register: result
+  until: result.rc == 0
 - name: Install virt config
   kubernetes.core.helm:
     name: virt-config
@@ -36,6 +38,8 @@
   register: control_plane_pods_ready
   retries: 30
   delay: 5
+  register: result
+  until: result.rc == 0
 - name: Install windows pipeline
   kubernetes.core.helm:
     name: win-base-pipeline
@@ -46,6 +50,8 @@
   register: control_plane_pods_ready
   retries: 30
   delay: 5
+  register: result
+  until: result.rc == 0
 - name: Run windows base image pipeline
   kubernetes.core.k8s:
     state: present
