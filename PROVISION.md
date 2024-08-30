@@ -47,10 +47,26 @@ Using project "default".
 Note: Do not include `https://` in the `gitlab_host` variable
 
 ## Create Windows IIS App
-1. Launch the Developer Hub console and click "create" and select the "Project" catalog item (logged in as a user1).
-- When filling out the template, provide: a name for the new comoponent, set the "Owner" as `group:user1`
+This involves clicking "create" filling out two templates `Project` and `IIS Web Application`
 
-2. Once completed create an IIS Web Application catalog item.
-3. Use the defaults except for putting in the gitlab url (without `https://`) for your environment on step 2.  Leave the development item as the default.
-4. Once complete either wait for the argocd to sync or manually trigger the sync from the argo console.
-5. Find the new project in OpenShift for example if the project name was test you will find a test-dev project in your OpenShift console and get the network route to test that the vm is routing traffic correctly.
+### Steps:
+
+1. **Launch Developer Hub Console**:
+   - Log in as `user1`.
+   - Click "Create" and select the `Project` catalog item.
+   - Fill out the `Project` template:
+     - **Component Name**: Provide a name for the new component.
+     - **Owner**: Set this to `group:user1`.
+     - **GitLab URL**: Enter your GitLab URL without the `https://` prefix.
+     - **Development Item**: Leave this as the default value.
+   - Complete the template setup.
+
+2. **Create IIS Web Application**:
+   - After the `Project` template is provisioned, create an `IIS Web Application` using the corresponding catalog item.
+
+3. **Sync with ArgoCD**:
+   - Wait for ArgoCD to automatically sync, or manually trigger the sync from the ArgoCD console.
+
+4. **Verify in OpenShift**:
+   - Locate the new project in the OpenShift console. For instance, if the project name is `test`, you will find a `test-dev` project.
+   - Get the network route to confirm that the VM is correctly routing traffic.
