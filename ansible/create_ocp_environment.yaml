@@ -5,7 +5,7 @@
         file: tasks/install_openshift_virt.yaml
     - name: Push templates to gitlab
       ansible.builtin.import_tasks:
-        file: tasks/push_templates.yaml
+        file: tasks/push_templates_new.yaml
     - name: Update Dev Hub Config
       ansible.builtin.import_tasks:
         file: tasks/add_templates.yaml

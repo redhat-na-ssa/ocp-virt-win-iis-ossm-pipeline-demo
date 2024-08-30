@@ -1,0 +1,19 @@
+- name: Remove existing gitlab origin if it exists
+  ansible.builtin.shell: |
+    if git remote get-url gitlab; then
+      git remote rm gitlab
+    fi
+  ignore_errors: True
+
+- name: Add gitlab origin
+  ansible.builtin.shell: git remote add gitlab "https://root:{{ root_password }}@{{ gitlab_host }}/development/windows-templates"
+  ignore_errors: False
+
+- name: Ensure the correct branch is checked out
+  ansible.builtin.shell: |
+    git checkout -b add-rhdh-templates || git checkout add-rhdh-templates
+  ignore_errors: False
+
+- name: Push templates
+  ansible.builtin.shell: git push gitlab add-rhdh-templates
+  ignore_errors: False
