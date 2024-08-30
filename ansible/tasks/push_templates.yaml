@@ -1,4 +1,7 @@
-- name: Add origin
+- name: Remove existing gitlab origin
+  ansible.builtin.shell: git remote rm gitlab
+  ignore_errors: True
+- name: Add gitlab origin
   ansible.builtin.shell: git remote add gitlab "https://root:{{ root_password }}@{{ gitlab_host }}/development/windows-templates"
   ignore_errors: True
 - name: Push templates
