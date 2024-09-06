@@ -9,7 +9,7 @@ spec:
     name: ${{values.name}}-front-end
     weight: 100
   port:
-    targetPort: http
+    targetPort: http-port
   tls:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect

@@ -24,6 +24,9 @@
           automated:
             prune: false
             selfHeal: false
+- name: Get git branch name
+  ansible.builtin.shell: git branch --show-current
+  register: git_branch
 - name: Add new DH config
   kubernetes.core.k8s:
     state: present
