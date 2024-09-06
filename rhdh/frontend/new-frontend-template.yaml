@@ -59,12 +59,19 @@ spec:
       action: catalog:fetch
       input:
         entityRef: ${{ parameters.system }}
+    - id: backendFetch
+      name: Fetch Backend Entity
+      action: catalog:fetch
+      input:
+        entityRef: ${{ parameters.backend }}
     - id: fetch-base
       name: Fetch Base
       action: fetch:template
       input:
         url: ./template
         values:
+          backendServiceName: ${{ steps.backendFetch.output.entity.metadata.name }}
+          image: ${{ parameters.container }}
           name: ${{ parameters.name }}
           owner: ${{ user.entity.metadata.name }}
           host: ${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}
