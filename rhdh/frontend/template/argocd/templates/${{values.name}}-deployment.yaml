@@ -33,7 +33,7 @@ spec:
       containers:
       - env:
         - name: BACKEND_SERVICE_HOST
-          value: ${{values.backendServiceName}}
+          value: http://${{values.backendServiceName}}
         image: ${{values.image}}
         imagePullPolicy: Always
         name: ${{values.name}}-front-end
