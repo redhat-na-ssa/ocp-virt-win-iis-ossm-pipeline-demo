@@ -63,6 +63,13 @@ This involves clicking "create" filling out two templates `Project` and `IIS Web
 
 2. **Create IIS Web Application**:
    - After the `Project` template is provisioned, create an `IIS Web Application` using the corresponding catalog item.
+   - Keep defaults for all the steps
+
+3. **Create Frontend Application**:
+   - After the `IIS Web Application` template is provisioned, create an `IIS Frontend Application` using the corresponding catalog item.
+   - Choose the backend you created in step 2
+   - Keep defaults for IIS deployment options step
+
 
 3. **Sync with ArgoCD**:
    - Wait for ArgoCD to automatically sync, or manually trigger the sync from the ArgoCD console.
