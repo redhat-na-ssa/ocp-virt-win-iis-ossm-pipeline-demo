@@ -1,0 +1,14 @@
+- name: create dotnet namespace
+  kubernetes.core.k8s:
+    state: present
+    template: 'templates/dotnet-frontend-namespace.yaml'
+- name: Wait for dotnet pipeline
+  shell: "kubectl wait pipeline solacetk-ui --for=jsonpath={.metadata.name}=solacetk-ui --namespace build-dotnet"
+  retries: 30
+  delay: 5
+  register: result
+  until: result.rc == 0
+- name: create dotnet pipeline
+  kubernetes.core.k8s:
+    state: present
+    template: 'templates/dotnet-frontend-namespace.yaml'

@@ -5,7 +5,10 @@
         file: tasks/install_openshift_virt.yaml
     - name: Push templates to gitlab
       ansible.builtin.import_tasks:
-        file: tasks/push_templates_new.yaml
+        file: tasks/push_templates.yaml
     - name: Update Dev Hub Config
       ansible.builtin.import_tasks:
         file: tasks/add_templates.yaml
+    - name: Build dotnet image
+      ansible.builtin.import_tasks:
+        file: tasks/build_dotnet.yaml

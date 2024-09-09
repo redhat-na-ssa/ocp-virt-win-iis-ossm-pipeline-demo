@@ -9,9 +9,9 @@ This demo will utilize the demo.redhat.com platform.  You will need to have acce
 4. `typing-extension` python library is installed on your local workstation
 
 ```
-python3.11 -m pip install PyYAML
-python3.11 -m pip install kubernetes
-python3.11 -m pip install typing-extensions
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ## Request Environment
