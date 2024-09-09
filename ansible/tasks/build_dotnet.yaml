@@ -8,7 +8,7 @@
   delay: 5
   register: result
   until: result.rc == 0
-- name: create dotnet pipeline
+- name: create dotnet pipeline run
   kubernetes.core.k8s:
     state: present
-    template: 'templates/dotnet-frontend-namespace.yaml'
+    template: 'templates/dotnet-frontend-pipeline.yaml'

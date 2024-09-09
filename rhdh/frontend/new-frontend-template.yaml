@@ -49,7 +49,7 @@ spec:
           title: Container Image
           type: string
           description: The location for the container app
-          default: quay.io/llevy/service-b:v1
+          default: image-registry.openshift-image-registry.svc:5000/build-dotnet/solacetk-ui:latest
 
 
   # here's the steps that are executed in series in the scaffolder backend
@@ -104,4 +104,4 @@ spec:
       name: Register
       action: catalog:register
       input:
-        catalogInfoUrl: https://${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}/development/${{ steps.systemFetch.output.entity.metadata.name }}/-/blob/master/${{parameters.name}}-vm-component.yaml
+        catalogInfoUrl: https://${{ steps.systemFetch.output.entity.metadata.annotations['gitlab.com/instance'] }}/development/${{ steps.systemFetch.output.entity.metadata.name }}/-/blob/master/${{parameters.name}}-frontend-component.yaml
