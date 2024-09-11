@@ -26,15 +26,20 @@ data:
       - rules:
         - allow:
           - Template
-        target: https://{{ gitlab_host }}/development/windows-templates/blob/add-rhdh-templates/rhdh/system/new-project-template.yaml
+        target: https://{{ gitlab_host }}/development/windows-templates/blob/{{ git_branch.stdout }}/rhdh/system/new-project-template.yaml
         type: url
       - rules:
         - allow:
           - Template
-        target: https://{{ gitlab_host }}/development/windows-templates/blob/add-rhdh-templates/rhdh/system/new-project-template.yaml
+        target: https://{{ gitlab_host }}/development/windows-templates/blob/{{ git_branch.stdout }}/rhdh/system/new-project-template.yaml
         type: url
       - rules:
         - allow:
           - Template
-        target: https://{{ gitlab_host }}/development/windows-templates/blob/add-rhdh-templates/rhdh/windows-vm/new-vm-template.yaml
+        target: https://{{ gitlab_host }}/development/windows-templates/blob/{{ git_branch.stdout }}/rhdh/windows-vm/new-vm-template.yaml
+        type: url
+      - rules:
+        - allow:
+          - Template
+        target: https://{{ gitlab_host }}/development/windows-templates/blob/{{ git_branch.stdout }}/rhdh/frontend/new-frontend-template.yaml
         type: url
