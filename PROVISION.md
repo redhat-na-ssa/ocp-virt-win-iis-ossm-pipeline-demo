@@ -95,3 +95,6 @@ This involves clicking "create" filling out two templates `Project` and `IIS Web
 4. **Verify in OpenShift**:
    - Locate the new project in the OpenShift console. For instance, if the project name is `test`, you will find a `test-dev` project.
    - Get the network route to confirm that the VM is correctly routing traffic.
+   - Verify backend is up with `<dotnet-iis-app route>/swagger`
+   - verify front end is up with `<web-front-end route>` - this will run even if the backend is down, 
+     but will only display red status circles. They will show up as green if the backend is up.
