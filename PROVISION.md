@@ -23,6 +23,7 @@ pip install -r requirements.txt
 ## Setup Demo Environment
 
 You will need to run an ansible playbook to configure the additional items that will be required for this lab.
+[TODO: List items provisioned by playbook]
 
 1. Login to OpenShift cli using the provided credentials from the Developer Hub Access Demo details
 
@@ -46,12 +47,24 @@ Using project "default".
 
 Note: Do not include `https://` in the `gitlab_host` variable
 
+This playbook will create two pinelines/pipeline runs
+
+1. namespace `openshift-virtualization-os-images` - pipeline run `windows-efi-installer`
+2. namespace `build-dotnet` - pipeline run `solacetk-ui`
+
+Wait for these pipelineruns to complete before proceeding to the next steps.  
+`windows-efi-installer` can take awhile to complete... go get some coffee... take the dog for a walk, etc...    
+It took 38 minutes last time I waited for completion.
+
+![OpenShift console view of PRs](image01.png)
+
 ## Create Windows IIS App
 This involves clicking "create" filling out two templates `Project` and `IIS Web Application`
 
 ### Steps:
 
 1. **Launch Developer Hub Console**:
+![Project Template](image02.png)
    - Log in as `user1`.
    - Click "Create" and select the `Project` catalog item.
    - Fill out the `Project` template:
@@ -60,18 +73,23 @@ This involves clicking "create" filling out two templates `Project` and `IIS Web
      - **GitLab URL**: Enter your GitLab URL without the `https://` prefix.
      - **Development Item**: Leave this as the default value.
    - Complete the template setup.
+![example "Project" form values](image03.png)  
+  
 
 2. **Create IIS Web Application**:
+![Windows IIS Application Template](image-1.png)
    - After the `Project` template is provisioned, create an `IIS Web Application` using the corresponding catalog item.
    - Keep defaults for all the steps
 
 3. **Create Frontend Application**:
+![IIS Frontend Application Template](image-2.png)
    - After the `IIS Web Application` template is provisioned, create an `IIS Frontend Application` using the corresponding catalog item.
    - Choose the backend you created in step 2
    - Keep defaults for IIS deployment options step
 
 
 3. **Sync with ArgoCD**:
+![ArgoCD view](image-3.png)
    - Wait for ArgoCD to automatically sync, or manually trigger the sync from the ArgoCD console.
 
 4. **Verify in OpenShift**:
