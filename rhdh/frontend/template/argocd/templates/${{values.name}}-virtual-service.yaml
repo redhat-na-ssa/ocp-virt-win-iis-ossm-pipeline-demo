@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: ${{values.name}}-front-end-vs
+  namespace: ${{values.namespace}}
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - istio-system/demo-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: ${{values.name}}-front-end.${{values.namespace}}.svc.cluster.local
+        port:
+          number: 8080
