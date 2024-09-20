@@ -136,7 +136,8 @@ This involves clicking "create" filling out three templates `Project`, `IIS Web 
 
 1. **Launch Developer Hub Console and create 'Project`**  
 
-![Project Template](image02.png)
+![Project Template](image02.png)  
+
    - Log in as `user1`.
    - Click "Create" and select the `Project` catalog item.
    - Fill out the `Project` template:
@@ -150,14 +151,16 @@ This involves clicking "create" filling out three templates `Project`, `IIS Web 
 
 2. **Create IIS Web Application**:  
 
-![Windows IIS Application Template](image-1.png)
+![Windows IIS Application Template](image-1.png)  
+
    - After the `Project` template is provisioned, create an `IIS Web Application` using the corresponding catalog item.
    - Keep defaults for all the steps
    - This application can take a few minutes to be up and running (15+ minutes sometimes)
 
 3. **Create Frontend Application**:  
 
-![IIS Frontend Application Template](image-2.png)
+![IIS Frontend Application Template](image-2.png)  
+
    - After the `IIS Web Application` template is provisioned, create an `IIS Frontend Application` using the corresponding catalog item.
    - Choose the backend you created in step 2
    - Keep defaults for IIS deployment options step
@@ -165,7 +168,8 @@ This involves clicking "create" filling out three templates `Project`, `IIS Web 
 
 3. **Sync with ArgoCD**:  
 
-![ArgoCD view](image-3.png)
+![ArgoCD view](image-3.png)  
+
    - Wait for ArgoCD to automatically sync, or manually trigger the sync from the ArgoCD console.
 
 ## Validate application access  
@@ -191,7 +195,7 @@ istio-ingressgateway-istio-system.apps.cluster-nqwzb.nqwzb.sandbox1400.opentlc.c
 
 3. Access the front end webpage using the `$GATEWAY` URL in a browser (note: `http` not `https`)  
 
-![Web Page](image-4.png)
+![Web Page](image-4.png)  
 
 If the status shows green next to `Service` and `Data`, then the front end is successfully communicating with the IIS service running on the VM.
 
@@ -199,8 +203,8 @@ If the status shows green next to `Service` and `Data`, then the front end is su
 
 - Go to the topology view of your namespace and click the `Kiali` link in the upper right corner
   
-![Topology view](image-5.png)
+![Topology view](image-5.png)  
 
 - View the flow of traffic in the `Graph` view in Kiali
   
-![Kiali](image-6.png)
+![Kiali](image-6.png)  
