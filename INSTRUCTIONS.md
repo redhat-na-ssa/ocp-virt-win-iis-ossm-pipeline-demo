@@ -80,7 +80,6 @@ It took 38 minutes last time I waited for completion.
 
 *** Note: *** These steps can be completed in parallel whilst you wait for the pipelines to complete.
 
-TODO: Automate with CR and ansible
 
 To install `Red Hat OpenShift Service Mesh`, you must install the `Red Hat OpenShift Service Mesh Operator`. Repeat the procedure for each additional Operator you want to install.
 
@@ -90,8 +89,15 @@ Additional Operators include:
 
 - `Red Hat OpenShift distributed tracing platform provided by Red Hat`  
  
-(Note: *Red Hat OpenShift distributed tracing* will need to be replaced with the *Tempo Operator* down the road)
+This process can be automated with the janus-argocd instance in the RHDH demo environment
 
+```bash
+oc apply -f k8/infra/argocd.yaml            
+
+
+application.argoproj.io/service-mesh created
+```
+![ArgoCD deployment of Service Mesh Operators](image-7.png)
 
 ## Create Service Mesh control plane
 
