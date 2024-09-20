@@ -1,3 +1,5 @@
+# This needs to be created before the VM and backend are created
+# It is adding the namespace/project to the service mesh
 kind: ServiceMeshMember
 apiVersion: maistra.io/v1
 metadata:

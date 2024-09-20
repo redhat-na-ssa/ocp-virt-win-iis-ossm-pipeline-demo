@@ -5,11 +5,6 @@ metadata:
   namespace: ${{values.namespace}}
   labels:
     app: ${{values.name}}-vm
-    version: VM1
-    app.kubernetes.io/component: ${{values.name}}-vm
-    app.kubernetes.io/instance: ${{values.name}}-vm
-    app.kubernetes.io/name: ${{values.name}}-vm
-    app.kubernetes.io/part-of: app
     vm.kubevirt.io/template: windows2k22-server-medium
     vm.kubevirt.io/template.namespace: openshift
     vm.kubevirt.io/template.revision: '1'
@@ -37,17 +32,10 @@ spec:
         vm.kubevirt.io/flavor: medium
         vm.kubevirt.io/os: windows2k22
         vm.kubevirt.io/workload: server
-        sidecar.istio.io/inject: "true"
-        proxy.istio.io/config: | # needed in order to bypass proxy for DNS (needed for outside access to gihub .zip file)
-          proxyMetadata:
-            ISTIO_META_DNS_CAPTURE: "false"  # Disable DNS capture
       creationTimestamp: null
       labels:
         kubevirt.io/domain: ${{values.name}}-vm
         kubevirt.io/size: medium
-        app: ${{values.name}}-vm
-        deployment: ${{values.name}}-vm
-        version: VM1
     spec:
       architecture: amd64
       domain:
@@ -119,7 +107,7 @@ spec:
       terminationGracePeriodSeconds: 3600
       volumes:
         - dataVolume:
-            name: dotnet-iis-app-vm
+            name: ${{values.name}}-vm
           name: rootdisk
         - containerDisk:
             image: 'registry.redhat.io/container-native-virtualization/virtio-win-rhel9@sha256:dec184c5c2de08a332f5cea6d964a792ca3630e22cebcb929f90d49cd4545609'
@@ -127,4 +115,4 @@ spec:
         - name: sysprep
           sysprep:
             configMap:
-              name: dotnet-iis-app-sysprep
+              name: ${{values.name}}-sysprep

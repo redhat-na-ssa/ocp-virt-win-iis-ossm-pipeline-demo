@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: ${{values.name}}
+  namespace: ${{values.namespace}}
+spec:
+  host: ${{values.name}}
+  trafficPolicy:
+    loadBalancer:
+      simple: RANDOM
+  subsets:
+  - name: VM1
+    labels:
+      version: VM1

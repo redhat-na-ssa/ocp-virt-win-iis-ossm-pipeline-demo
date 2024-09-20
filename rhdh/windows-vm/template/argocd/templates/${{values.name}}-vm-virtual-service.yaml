@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: ${{values.name}}
+  namespace: ${{values.namespace}}
+spec:
+  hosts:
+    - dotnet-iis-app.${{values.namespace}}.svc.cluster.local
+  http:
+  - route:
+    - destination:
+        host: dotnet-iis-app.${{values.namespace}}.svc.cluster.local
+        subset: VM1 
+      weight: 100
