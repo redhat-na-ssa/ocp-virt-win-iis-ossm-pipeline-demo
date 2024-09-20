@@ -1,7 +1,3 @@
-echo "Deploy ingress-gateway"  
-
-oc apply -f k8/service-mesh/istio/ingress-gateway.yaml -n istio-system
-
 ### Create Namespace for app
 
 echo "Create a namespace/project called demo-vm-ossm which is where the control plane will be deployed."  

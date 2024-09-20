@@ -1,9 +1,7 @@
 # ocp-virt-win-iis-ossm-pipeline-demo
 
 
-## TODO:
-
-- Leon: Create OSSM skeleton
+See `INSTRUCTIONS.md` for instructions on getting the demo running in Red Hat Developer Hub
 
 ### Install Windows Base Image
 

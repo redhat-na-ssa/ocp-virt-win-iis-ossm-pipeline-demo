@@ -25,3 +25,7 @@ watch oc get pods -n istio-system
 
 echo "Is kiali running?"
 oc get pods -n istio-system | grep kiali
+
+echo "Deploy ingress-gateway"  
+
+oc apply -f k8/service-mesh/istio/ingress-gateway.yaml -n istio-system
