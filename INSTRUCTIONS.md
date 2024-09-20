@@ -19,7 +19,7 @@ These are the steps needed to set up and run this demo. Detailed instructions fo
 - [Link to order demo](https://demo.redhat.com/catalog?item=babylon-catalog-prod/enterprise.red-hat-developer-hub-demo.prod)
 - Once provisioned, note the URL and Password for gitlab
 example (you will use this info later):
-```
+```bash
 export GITLAB_HOST=gitlab-gitlab.apps.cluster-ou812.ou812.sandbox512.opentlc.com
 
 export GITLAB_PASSWORD=MjYzMjg4
@@ -33,7 +33,7 @@ export GITLAB_PASSWORD=MjYzMjg4
 3. `kubernetes` python library is installed on your local workstation
 4. `typing-extension` python library is installed on your local workstation
 
-```
+```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -45,7 +45,7 @@ You will need to run an ansible playbook to configure the additional items that 
 
 1. Login to OpenShift cli using the provided credentials from the Developer Hub Access Demo details
 
-```
+```bash
 Example: 
 
 oc login -u admin -p 12345 https://api.cluster-abcd.abcd.sandbox42069.opentlc.com:6443    
@@ -58,7 +58,7 @@ Using project "default".
 ```
  
 2. Run the ansible playbook substituting the values for your root password from the demo.redhat.com console and the gitlab dns hostname as well
-    ```
+    ```bash
     cd ansible
     ansible-playbook --extra-vars "gitlab_host=${GITLAB_HOST}" --extra-vars "root_password=${GITLAB_PASSWORD}" ./create_ocp_environment.yaml
     ```
@@ -95,7 +95,7 @@ Additional Operators include:
 
 Once all the operators have been installed, run:
 
-```
+```bash
 sh ./1-setup-mesh.sh
 1. Create a namespace/project called istio-system which is where the control plane will be deployed.
 project.project.openshift.io/istio-system created
@@ -168,7 +168,7 @@ This involves clicking "create" filling out three templates `Project`, `IIS Web 
 
 2. verify front end is up with and accessible via the `istio-ingressgateway` route - this will run even if the backend is down, but will only display red status circles. They will show up as green if the backend is up.
 
-```
+```bash
 export GATEWAY=$(oc get route istio-ingressgateway -n istio-system -o template --template '{{ .spec.host }}')
 
 echo $GATEWAY 
@@ -177,7 +177,7 @@ curl -o /dev/null -s -w "%{http_code}\n" $GATEWAY
 ```
 
 (example output:)
-```
+```bash
 istio-ingressgateway-istio-system.apps.cluster-nqwzb.nqwzb.sandbox1400.opentlc.com
 200 # <- http return code
 ```
