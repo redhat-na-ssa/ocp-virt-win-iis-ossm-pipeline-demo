@@ -17,12 +17,26 @@ These are the steps needed to set up and run this demo. Detailed instructions fo
 
 1. Provision the following Demo from Red Hat Demo Platform
 - [Link to order demo](https://demo.redhat.com/catalog?item=babylon-catalog-prod/enterprise.red-hat-developer-hub-demo.prod)
+
+2. Login to OpenShift cli using the provided credentials from the Developer Hub Access Demo details
+
+```bash
+Example: 
+
+oc login -u admin -p 12345 https://api.cluster-abcd.abcd.sandbox42069.opentlc.com:6443    
+
+Login successful.
+
+You have access to 88 projects, the list has been suppressed. You can list all projects with 'oc projects'
+
+Using project "default". 
+```
 - Once provisioned, note the URL and Password for gitlab
 example (you will use this info later):
-```bash
-export GITLAB_HOST=gitlab-gitlab.apps.cluster-ou812.ou812.sandbox512.opentlc.com
 
-export GITLAB_PASSWORD=MjYzMjg4
+```bash
+export GITLAB_HOST=$(oc get route/gitlab -n gitlab -o jsonpath={.spec.host})
+export GITLAB_PASSWORD=$( oc get secret gitlab-secret -n gitlab  --template={{.data.GITLAB_ROOT_PASSWORD}} | base64 -d)
 ```
 
 ### Upload templates to RHDH and create base app images (container and VM)
@@ -43,27 +57,22 @@ pip install -r requirements.txt
 
 You will need to run an ansible playbook to configure the additional items that will be required for this demo.
 
-1. Login to OpenShift cli using the provided credentials from the Developer Hub Access Demo details
+ 
+Run the ansible playbook substituting the values for your root password from the demo.redhat.com console and the gitlab dns hostname as well
+
+ ```bash
+ cd ansible
+ ansible-playbook --extra-vars "gitlab_host=${GITLAB_HOST}" --extra-vars "root_password=${GITLAB_PASSWORD}" ./create_ocp_environment.yaml
+```
+
+**Notes:** 
+- Do not include `https://` in the `GITLAB_HOST` variable
+- If you see a python error when running the playbook, add the following env variable to the `ansible-playbook` command:
 
 ```bash
-Example: 
-
-oc login -u admin -p 12345 https://api.cluster-abcd.abcd.sandbox42069.opentlc.com:6443    
-
-Login successful.
-
-You have access to 88 projects, the list has been suppressed. You can list all projects with 'oc projects'
-
-Using project "default". 
+-e 'ansible_python_interpreter=$(which python3.11)’
 ```
- 
-2. Run the ansible playbook substituting the values for your root password from the demo.redhat.com console and the gitlab dns hostname as well
-    ```bash
-    cd ansible
-    ansible-playbook --extra-vars "gitlab_host=${GITLAB_HOST}" --extra-vars "root_password=${GITLAB_PASSWORD}" ./create_ocp_environment.yaml
-    ```
 
-*** Note: *** Do not include `https://` in the `GITLAB_HOST` variable
 
 This playbook will create two pinelines/pipeline runs
 
@@ -89,12 +98,15 @@ Additional Operators include:
 
 - `Red Hat OpenShift distributed tracing platform provided by Red Hat`  
  
-This process can be automated with the janus-argocd instance in the RHDH demo environment
-
+This process can be automated with the janus-argocd instance in the RHDH demo environment.  
+  
+Change back to the home directory, and then run the following to install these operators via ArgoCD
 ```bash
+cd <home directory>
+
 oc apply -f k8/infra/argocd.yaml            
-
-
+```
+```bash
 application.argoproj.io/service-mesh created
 ```
 ![ArgoCD deployment of Service Mesh Operators](image-7.png)
@@ -105,6 +117,8 @@ Once all the operators have been installed, run:
 
 ```bash
 sh ./1-setup-mesh.sh
+```
+```bash
 1. Create a namespace/project called istio-system which is where the control plane will be deployed.
 project.project.openshift.io/istio-system created
 
@@ -136,7 +150,9 @@ gateway.networking.istio.io/demo-gateway created
 
 ## Use RHDH to deploy application stack
 
-This involves clicking "create" filling out three templates `Project`, `IIS Web Application` and `IIS Frontend Application` (in that order)
+This involves clicking "create" filling out three templates `Project`, `IIS Web Application` and `IIS Frontend Application` (in that order). 
+
+Before proceeding, be sure that the pipeline run `windows-efi-installer` mentioned earlier has completed successfully.  
 
 ### Steps:
 
