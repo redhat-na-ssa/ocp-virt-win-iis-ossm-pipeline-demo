@@ -87,10 +87,10 @@ It took 38 minutes last time I waited for completion.
 
 ## Enable OpenShift Service Mesh Operators
 
-*** Note: *** These steps can be completed in parallel whilst you wait for the pipelines to complete.
+**Note:** These steps can be completed in parallel while waiting for the pipelines to complete.
 
 
-To install `Red Hat OpenShift Service Mesh`, you must install the `Red Hat OpenShift Service Mesh Operator`. Repeat the procedure for each additional Operator you want to install.
+To install `Red Hat OpenShift Service Mesh`, you must install the `Red Hat OpenShift Service Mesh Operator`. Repeat the procedure for each additional Operator.
 
 Additional Operators include:
 
@@ -98,8 +98,10 @@ Additional Operators include:
 
 - `Red Hat OpenShift distributed tracing platform provided by Red Hat`  
  
-This process can be automated with the janus-argocd instance in the RHDH demo environment.  
-  
+This process can completed in the OpenShift web console, or be automated with the janus-argocd instance in the RHDH demo environment.  
+
+### Argo Method
+
 Change back to the home directory, and then run the following to install these operators via ArgoCD
 ```bash
 cd <home directory>
@@ -113,7 +115,7 @@ application.argoproj.io/service-mesh created
 
 ## Create Service Mesh control plane
 
-Once all the operators have been installed, run:
+Once all the operators have been installed, run: [TODO automate the waiting of Kiali]
 
 ```bash
 sh ./1-setup-mesh.sh
@@ -122,7 +124,7 @@ sh ./1-setup-mesh.sh
 1. Create a namespace/project called istio-system which is where the control plane will be deployed.
 project.project.openshift.io/istio-system created
 
-2. Deploy a controle plane in istio-system
+2. Deploy a control plane in istio-system
 servicemeshcontrolplane.maistra.io/basic created
 Ensure mesh has been successfully deployed with the following pods
 
@@ -146,7 +148,7 @@ Deploy ingress-gateway
 gateway.networking.istio.io/demo-gateway created
 ```
 
-**Note:** Be sure to check that `Kiali` has been deployed (known bug in earlier versions prevented this)
+**Note:** Be sure to check that `Kiali` has been deployed (a known bug in earlier versions prevented this)
 
 ## Use RHDH to deploy application stack
 
