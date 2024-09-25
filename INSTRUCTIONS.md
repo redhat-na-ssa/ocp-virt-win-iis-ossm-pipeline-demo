@@ -103,11 +103,13 @@ This process can completed in the OpenShift web console, or be automated with th
 ### Argo Method
 
 Change back to the home directory, and then run the following to install these operators via ArgoCD
+
 ```bash
 cd <home directory>
 
 oc apply -f k8/infra/argocd.yaml            
 ```
+
 ```bash
 application.argoproj.io/service-mesh created
 ```
@@ -120,6 +122,7 @@ Once all the operators have been installed, run: [TODO automate the waiting of K
 ```bash
 sh ./1-setup-mesh.sh
 ```
+
 ```bash
 1. Create a namespace/project called istio-system which is where the control plane will be deployed.
 project.project.openshift.io/istio-system created
@@ -129,20 +132,18 @@ servicemeshcontrolplane.maistra.io/basic created
 Ensure mesh has been successfully deployed with the following pods
 
 
+Waiting for Kiali pod to be ready...
+Waiting for Kiali pod to be ready...
+...
 
-# NAME                                    READY   STATUS    RESTARTS   AGE
-# grafana-58d67499c4-67jhs                2/2     Running   0          108s
-# istio-egressgateway-5d577ccdff-k7nbc    1/1     Running   0          108s
-# istio-ingressgateway-75554d57b4-tqxmz   1/1     Running   0          108s
-# istiod-basic-57dfdc6cf-9n6x6            1/1     Running   0          2m13s
-# jaeger-6dbc9b8f95-tbzrg                 2/2     Running   0          105s
-# kiali-cbf4cbb84-dgfsw                   1/1     Running   0          72s
-# prometheus-6769665b64-6pb6g             3/3     Running   0          2m4s
-
-^Ctrl-C 
-
-Is kiali running?
-kiali-94cc484bf-cvbg5                   1/1     Running   0          37s
+NAME                                    READY   STATUS    RESTARTS   AGE
+grafana-58d67499c4-67jhs                2/2     Running   0          108s
+istio-egressgateway-5d577ccdff-k7nbc    1/1     Running   0          108s
+istio-ingressgateway-75554d57b4-tqxmz   1/1     Running   0          108s
+istiod-basic-57dfdc6cf-9n6x6            1/1     Running   0          2m13s
+jaeger-6dbc9b8f95-tbzrg                 2/2     Running   0          105s
+kiali-cbf4cbb84-dgfsw                   1/1     Running   0          72s
+prometheus-6769665b64-6pb6g             3/3     Running   0          2m4s
 
 Deploy ingress-gateway
 gateway.networking.istio.io/demo-gateway created
@@ -157,8 +158,9 @@ This involves clicking "create" filling out three templates `Project`, `IIS Web 
 Before proceeding, be sure that the pipeline run `windows-efi-installer` mentioned earlier has completed successfully.  
 
 ### Steps:
+1. Log into Developer Hub using your userX gitlab credentials (provided vi demo hub)
 
-1. **Launch Developer Hub Console and create 'Project`**  
+2. **Launch Developer Hub Console and create 'Project`**  
 
 ![Project Template](image02.png)  
 
@@ -173,7 +175,7 @@ Before proceeding, be sure that the pipeline run `windows-efi-installer` mention
 ![example "Project" form values](image.png)  
   
 
-2. **Create IIS Web Application**:  
+3. **Create IIS Web Application**:  
 
 ![Windows IIS Application Template](image-1.png)  
 
@@ -181,7 +183,7 @@ Before proceeding, be sure that the pipeline run `windows-efi-installer` mention
    - Keep defaults for all the steps
    - This application can take a few minutes to be up and running (15+ minutes sometimes)
 
-3. **Create Frontend Application**:  
+4. **Create Frontend Application**:  
 
 ![IIS Frontend Application Template](image-2.png)  
 
@@ -190,7 +192,7 @@ Before proceeding, be sure that the pipeline run `windows-efi-installer` mention
    - Keep defaults for IIS deployment options step
 
 
-3. **Sync with ArgoCD**:  
+5. **Sync with ArgoCD**:  
 
 ![ArgoCD view](image-3.png)  
 
