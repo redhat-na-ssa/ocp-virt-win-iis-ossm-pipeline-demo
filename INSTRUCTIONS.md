@@ -151,6 +151,16 @@ gateway.networking.istio.io/demo-gateway created
 
 **Note:** Be sure to check that `Kiali` has been deployed (a known bug in earlier versions prevented this)
 
+If you see the following error while the script waits for `kiali` to start, you can safely ignore it:
+
+```bash
+Waiting for Kiali pod to be ready...
+error: error executing jsonpath "{.items[0].status.containerStatuses[0].ready}": Error executing template: array index out of bounds: index 0, length 0. Printing more information for debugging the template:
+        template was:
+                {.items[0].status.containerStatuses[0].ready}
+        object given to jsonpath engine was:
+                map[string]interface {}{"apiVersion":"v1", "items":[]interface {}{}, "kind":"List", "metadata":map[string]interface {}{"resourceVersion":""}}
+```
 ## Use RHDH to deploy application stack
 
 This involves clicking "create" filling out three templates `Project`, `IIS Web Application` and `IIS Frontend Application` (in that order). 
