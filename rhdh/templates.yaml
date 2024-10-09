@@ -1,9 +1,0 @@
-apiVersion: backstage.io/v1alpha1
-kind: Location
-metadata:
-  name: windows-vm-software-templates
-  description: A collection of Backstage templates for Janus-IDP Backstage
-spec:
-  type: url
-  targets:
-    - https://raw.githubusercontent.com/mathianasj/ocp-virt-win-iis-ossm-pipeline-demo/add-rhdh-templates/rhdh/windows-vm/new-project-template.yaml
