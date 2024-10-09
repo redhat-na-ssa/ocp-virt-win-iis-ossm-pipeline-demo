@@ -1,0 +1,23 @@
+- name: Deploy servicemesh operator
+  kubernetes.core.k8s:
+    state: present
+    template: 'templates/servicemesh.yaml'
+- name: Create servicemesh control plane namespace
+  kubernetes.core.k8s:
+    state: present
+    template: 'templates/istio/namespace.yaml'
+- name: Create servicemesh control plane
+  kubernetes.core.k8s:
+    state: present
+    template: 'templates/istio/service-mesh-controle-plane.yaml'
+- name: Wait for kiali pod to be ready
+  shell: "kubectl wait --namespace=istio-system --for=condition=Ready pods --selector app=kiali --timeout=600s"
+  register: kiali_pods_ready
+  retries: 30
+  delay: 5
+  register: result
+  until: result.rc == 0
+- name: Create ingress gateway
+  kubernetes.core.k8s:
+    state: present
+    template: 'templates/istio/ingress-gateway.yaml'
