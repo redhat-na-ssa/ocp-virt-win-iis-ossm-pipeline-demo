@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: service-mesh
+  namespace: janus-argocd
+spec:
+  destination:
+    name: in-cluster
+  project: janus
+  source:
+    path: infra
+    repoURL: https://github.com/bugbiteme/ServiceMeshDemo.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated: {}
