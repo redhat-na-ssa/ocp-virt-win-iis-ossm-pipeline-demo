@@ -12,3 +12,6 @@
     - name: Build dotnet image
       ansible.builtin.import_tasks:
         file: tasks/build_dotnet.yaml
+    - name: Install and configure OpenShift ServiceMesh
+      ansible.builtin.import_tasks:
+        file: tasks/install_servicemesh.yaml

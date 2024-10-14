@@ -1,162 +1,88 @@
 # ocp-virt-win-iis-ossm-pipeline-demo
 
 
-See `INSTRUCTIONS.md` for instructions on getting the demo running in Red Hat Developer Hub
+See `PROVISION.md` for instructions on setting up the demo environment
 
-### Install Windows Base Image
+## Use RHDH to deploy application stack [DEMO SCRIPT]
 
-1. Create the rbac and service account
-  ```
-  oc apply -f ./k8/win-base-pipeline/pipeline-rbac.yaml
-  oc apply -f ./k8/win-base-pipeline/pipeline-serviceaccount.yaml
-  ```
-1. Create the pipeline to generate the base windows iso
-  ```
-  oc apply -f ./k8/win-base-pipeline/windows-efi-installer-pipeline.yaml
-  ```
-1. Create the pipelinerun which will actually download the iso and build the base windows server golden image
-  ```
-  oc create -f ./k8/win-base-pipeline/windows-efi-installer-pipelinerun.yaml
-  ```
+This involves clicking "create" filling out three templates `Project`, `IIS Web Application` and `IIS Frontend Application` (in that order). 
 
-### Install OSSM operators
+Before proceeding, be sure that the pipeline run `windows-efi-installer` mentioned earlier has completed successfully.  
 
-*(Assumes the OpenShift Virtualization operator has already been installed and is up and running)*  
+### Steps:
+1. Log into Developer Hub using your userX gitlab credentials (provided vi demo hub)
 
-To install Red Hat OpenShift Service Mesh, you must install the Red Hat OpenShift Service Mesh Operator. Repeat the procedure for each additional Operator you want to install.
+2. **Launch Developer Hub Console and create 'Project`**  
 
-Additional Operators include:
+![Project Template](image02.png)  
 
-- Kiali Operator provided by Red Hat
+   - Log in as `user1`.
+   - Click "Create" and select the `Project` catalog item.
+   - Fill out the `Project` template:
+     - **Component Name**: Provide a name for the new component.
+     - **Owner**: Set this to `group:user1`.
+     - **GitLab URL**: Enter your GitLab URL without the `https://` prefix.
+     - **Development Item**: Leave this as the default value.
+   - Complete the template setup.  
+![example "Project" form values](image.png)  
+  
 
-- Red Hat OpenShift distributed tracing platform provided by Red Hat  
- 
-(Note: *Red Hat OpenShift distributed tracing* will need to be replaced with the *Tempo Operator* down the road)
+3. **Create IIS Web Application**:  
+
+![Windows IIS Application Template](image-1.png)  
+
+   - After the `Project` template is provisioned, create an `IIS Web Application` using the corresponding catalog item.
+   - Keep defaults for all the steps
+   - This application can take a few minutes to be up and running (15+ minutes sometimes)
+
+4. **Create Frontend Application**:  
+
+![IIS Frontend Application Template](image-2.png)  
+
+   - After the `IIS Web Application` template is provisioned, create an `IIS Frontend Application` using the corresponding catalog item.
+   - Choose the backend you created in step 2
+   - Keep defaults for IIS deployment options step
 
 
-### Create Service Mesh control plane
+5. **Sync with ArgoCD**:  
 
-You can run the below instructions manually, as described, or run the helper scripts in order
-to save some copy/pasta time:
+![ArgoCD view](image-3.png)  
 
-verify one script completes before running the next one in order.
+   - Wait for ArgoCD to automatically sync, or manually trigger the sync from the ArgoCD console.
 
-TODO: add waiting until success capability in scripts
+## Validate application access  
 
-```
-sh 1-setup-mesh.sh
+1.  Locate the new project in the OpenShift console. For instance, if the project name is `test`, you will find a `test-dev` project.
 
-sh 2-setup-app.sh
+2. verify front end is up with and accessible via the `istio-ingressgateway` route - this will run even if the backend is down, but will only display red status circles. They will show up as green if the backend is up.
 
-sh 3-test-app.sh
-```
-
-1. Create a namespace/project called `istio-system` which is where the control plane will be deployed.  
- 
- `oc apply -f k8/service-mesh/istio/namespace.yaml`  
-
-2. Deploy a controle plane in `istio-system`  
-
-`oc apply -f k8/service-mesh/istio/service-mesh-controle-plane.yaml`  
-
-Ensure mesh has been successfully deployed with the following pods
-
-`oc get pods -n istio-system`     
-```                                                                                            
-NAME                                    READY   STATUS    RESTARTS   AGE
-grafana-5b984fffd5-hn6mv                2/2     Running   0          2m45s
-istio-egressgateway-5d577ccdff-qwslr    1/1     Running   0          2m46s
-istio-ingressgateway-75554d57b4-z5qsl   1/1     Running   0          2m46s
-istiod-basic-57dfdc6cf-nfsml            1/1     Running   0          3m14s
-jaeger-77d67b7fdb-tq8fc                 2/2     Running   0          2m43s
-kiali-66499d5bcf-jrrlp                  1/1     Running   0          118s
-prometheus-749fd69c7-vzczn              3/3     Running   0          3m3s
-```
-3. Deploy ingress-gateway  
-
-`oc apply -f k8/service-mesh/istio/ingress-gateway.yaml -n istio-system`
-
-### Create Namespace for app
-
-Create a namespace/project called `demo-vm-ossm` which is where the control plane will be deployed.  
- 
- `oc apply -f k8/deployments/namespace.yaml`  
-
-### Add namespace to ServiceMeshMemberRole
-
-`oc apply -f k8/service-mesh/istio/service-mesh-member-role.yaml`
-
-### Create placeholder container deployment and VM with service mesh annotations (back-end)
-
-`oc apply -f k8/deployments/vm/manifests -n demo-vm-ossm`
-
-#### Container Deployement (front-end)
- 
-`oc apply -f k8/deployments/container/manifests -n demo-vm-ossm`
-
-### Ensure setup is working
-1. Get the ingress-gateway URL
-
-```
+```bash
 export GATEWAY=$(oc get route istio-ingressgateway -n istio-system -o template --template '{{ .spec.host }}')
 
-echo $GATEWAY                                                                                                
+echo $GATEWAY 
+curl -o /dev/null -s -w "%{http_code}\n" $GATEWAY
 
-istio-ingressgateway-istio-system.apps.cluster-phx5k.dynamic.redhatworkshops.io
 ```
-2. Call the front-end service (the container based deployment)
+
+(example output:)
+```bash
+istio-ingressgateway-istio-system.apps.cluster-nqwzb.nqwzb.sandbox1400.opentlc.com
+200 # <- http return code
+```
+**Note:** If the return code is not `200`, something is not right
+
+3. Access the front end webpage using the `$GATEWAY` URL in a browser (note: `http` not `https`)  
+
+![Web Page](image-4.png)  
+
+If the status shows green next to `Service` and `Data`, then the front end is successfully communicating with the IIS service running on the VM.
+
+4. Check istio connectivity in Kiali
+
+- Go to the topology view of your namespace and click the `Kiali` link in the upper right corner
   
-  Returns from the local front-end service without makeing any backend calls
+![Topology view](image-5.png)  
 
-```
-curl $GATEWAY/web/hello
-{"message":"Hello World from web-front-end"}
-```
-
-3. Call the back-end service via the front-end  
-
-```
-curl $GATEWAY/web/hello-service                               
-{"response":{"message":"Hello World from vm-backend-b1"}}
-```
-This is calling the container deployment via the gateway. Internally this API is making a call to the back-end service running on the VM and passing the response from it back
-
-```
-   +-----------+       +----------------+       +-----------------------+       +-------------+  
-   | API Caller | ---> | Ingress Gateway | ---> | Front-end Deployment  | --->  |  Back-end VM|  
-   +-----------+       +----------------+       +-----------------------+       +-------------+  
-         |                        |                        |                       |  
-         |<-----------------------|<-----------------------|<----------------------|  
-          (5) Response from       (4) Response from       (3) Call to VM          (2) Call to Front-end  
-              Front-end to            VM to Front-end         from Front-end        from Ingress Gateway  
-              API Caller  
-
-(1) API Caller makes a call to the Ingress Gateway.
-(2) The Ingress Gateway routes the call to the Front-end Deployment.
-(3) The Front-end Deployment makes a call to the Back-end VM.
-(4) The Back-end VM sends a response back to the Front-end Deployment.
-(5) The Front-end Deployment sends the response from the Back-end VM to the API Caller.
-```
-
-### IIS VM Deployment
-
-To deploy windows app directly from repo:  
-
-# Configmap with sys-prep data winvm-iis
-```
-oc create -n demo-vm-ossm -f k8/deployments/iisvm/unattendconfigmap.yaml
-```
-
-# Service for IIS API winvm-iis
-```
-oc create -n demo-vm-ossm -f k8/deployments/iisvm/service.yaml
-oc create -n demo-vm-ossm -f k8/deployments/iisvm/route.yaml
-```
-
-# The VM creation
-```
-oc create -n demo-vm-ossm -f k8/deployments/iisvm/vm.yaml
-```
-
-
-### TODO
+- View the flow of traffic in the `Graph` view in Kiali
+  
+![Kiali](image-6.png)  
